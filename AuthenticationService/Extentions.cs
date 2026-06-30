@@ -11,6 +11,8 @@ using AuthenticationService.Domain.Contracts;
 using AuthenticationService.infrastructure.Persistence.Repositories;
 using AuthenticationService.infrastructure.Security;
 
+using MassTransit;
+
 namespace AuthenticationService
 {
     public static class Extentions
@@ -35,6 +37,18 @@ namespace AuthenticationService
 
             // Register Password Hasher
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
+
+            // Register Memory Cache
+            services.AddMemoryCache();
+
+            // Register MassTransit
+            services.AddMassTransit(x =>
+            {
+                x.UsingInMemory((context, cfg) =>
+                {
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
 
             // Register Repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

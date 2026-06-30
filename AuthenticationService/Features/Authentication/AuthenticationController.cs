@@ -1,7 +1,11 @@
 using AuthenticationService.Features.Authentication.Register;
+using AuthenticationService.Features.Authentication.CompleteProfile;
 using AuthenticationService.Common.Shared;
+using AuthenticationService.Common.Exceptions;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AuthenticationService.Features.Authentication
 {
@@ -25,6 +29,26 @@ namespace AuthenticationService.Features.Authentication
             var response = ApiResponse<RegisterDto>.Success(result, "Registration successful. Please complete your profile.", 201);
 
             return Created(string.Empty, response);
+        }
+
+        [HttpPost("complete-profile")]
+        [Authorize]
+        public async Task<IActionResult> CompleteProfile(CancellationToken cancellationToken)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                throw new AppException("Unauthorized access.", System.Net.HttpStatusCode.Unauthorized, "AUTH_UNAUTHORIZED");
+            }
+
+            var command = new CompleteProfileCommand(userId);
+            await _mediator.Send(command, cancellationToken);
+
+            var response = ApiResponse<object?>.Success(null, "Profile lifecycle initiated.", 200);
+
+            return Ok(response);
         }
     }
 }

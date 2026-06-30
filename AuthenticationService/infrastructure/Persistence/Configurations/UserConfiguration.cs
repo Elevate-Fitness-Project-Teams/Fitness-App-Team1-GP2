@@ -34,6 +34,9 @@ namespace AuthenticationService.infrastructure.Persistence.Configurations
 
             builder.Property(x => x.CreatedAt)
                 .IsRequired();
+
+            builder.Property(x => x.ProfileCompleted)
+                .HasDefaultValue(false);
         }
     }
 }

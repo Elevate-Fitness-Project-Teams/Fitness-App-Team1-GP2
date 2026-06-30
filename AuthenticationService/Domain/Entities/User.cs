@@ -1,4 +1,4 @@
-﻿namespace AuthenticationService.Domain.Entities
+namespace AuthenticationService.Domain.Entities
 {
     public class User : BaseEntity
     {
@@ -7,5 +7,6 @@
         public bool isLockedOut { get; set; } = false;
         public DateTime? LockedUntil { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool ProfileCompleted { get; set; } = false;
     }
 }

@@ -1,7 +1,9 @@
 using AuthenticationService.Common.Exceptions;
+using AuthenticationService.Common.Shared;
 using AuthenticationService.Domain.Contracts;
 using AuthenticationService.Domain.Entities;
 using MediatR;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,11 +14,16 @@ namespace AuthenticationService.Features.Authentication.Register
     {
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IMemoryCache _cache;
 
-        public RegisterCommandHandler(IUserRepository userRepository, IPasswordHasher passwordHasher)
+        public RegisterCommandHandler(
+            IUserRepository userRepository, 
+            IPasswordHasher passwordHasher,
+            IMemoryCache cache)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
+            _cache = cache;
         }
 
         public async Task<RegisterDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -26,7 +33,7 @@ namespace AuthenticationService.Features.Authentication.Register
 
             var email = request.RegisterRequest.Email.Trim().ToLower();
 
-            // Check if the email exists in the database
+            // Check if the email exists in the database (even if soft-deleted to avoid DB unique index conflict)
             var existingUser = await _userRepository.GetByEmailAsync(email, ignoreQueryFilters: true, cancellationToken);
 
             if (existingUser != null)
@@ -43,11 +50,26 @@ namespace AuthenticationService.Features.Authentication.Register
                 Email = email,
                 PasswordHash = hashedPassword,
                 isLockedOut = false,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                ProfileCompleted = false
             };
 
             // Save to database via UserRepository
             await _userRepository.AddAsync(user, cancellationToken);
+
+            // Cache registration profile details for life-cycle completion (30-minute sliding expiration)
+            var cacheKey = $"reg-{user.Id}";
+            var cachedData = new CachedRegistrationData(
+                request.RegisterRequest.FirstName,
+                request.RegisterRequest.LastName,
+                email,
+                request.RegisterRequest.PhoneNumber
+            );
+            
+            _cache.Set(cacheKey, cachedData, new MemoryCacheEntryOptions
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(30)
+            });
 
             // Return response dto
             return new RegisterDto
