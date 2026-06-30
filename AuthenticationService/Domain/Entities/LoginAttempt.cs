@@ -1,8 +1,7 @@
-﻿namespace AuthenticationService.Domain.Authentication
+﻿namespace AuthenticationService.Domain.Entities
 {
-    public class LoginAttempt
+    public class LoginAttempt : BaseEntity
     {
-        public int Id { get; set; }
         public string Email { get; set; }
         public DateTime AttemptedAt { get; set; }
         public bool IsSuccess { get; set; }

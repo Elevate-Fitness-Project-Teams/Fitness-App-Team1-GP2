@@ -1,8 +1,7 @@
-﻿namespace AuthenticationService.Domain.Authentication
+﻿namespace AuthenticationService.Domain.Entities
 {
-    public class OtpCode
+    public class OtpCode : BaseEntity
     {
-        public int Id { get; set; }
         public string Email { get; set; }
         public string Code { get; set; }
         public DateTime ExpiresAt { get; set; }

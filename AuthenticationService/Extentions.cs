@@ -1,11 +1,15 @@
+using AuthenticationService.Common.Middlewares;
 using AuthenticationService.Common.Shared;
-using AuthenticationService.infrastructure.Context;
 using FitnessApp.Common.Behaviors;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using AuthenticationService.infrastructure.Persistence.Context;
+using AuthenticationService.Domain.Contracts;
+using AuthenticationService.infrastructure.Persistence.Repositories;
+using AuthenticationService.infrastructure.Security;
 
 namespace AuthenticationService
 {
@@ -18,7 +22,6 @@ namespace AuthenticationService
 
             services.ConfigureJWT(configuration);
 
-
             services.AddDbContext<AuthDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("AuthenticationConnection")));
 
@@ -30,6 +33,16 @@ namespace AuthenticationService
 
             services.AddValidatorsFromAssemblyContaining<Program>();
 
+            // Register Password Hasher
+            services.AddSingleton<IPasswordHasher, PasswordHasher>();
+
+            // Register Repositories
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IUserRepository, UserRepository>();
+
+            // Register Global Exception Handler
+            services.AddExceptionHandler<GlobalExceptionHandler>();
+            services.AddProblemDetails();
 
             return services;
         }

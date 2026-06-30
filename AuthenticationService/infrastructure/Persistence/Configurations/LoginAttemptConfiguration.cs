@@ -1,8 +1,8 @@
-using AuthenticationService.Domain.Authentication;
+using AuthenticationService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AuthenticationService.infrastructure.Configurations
+namespace AuthenticationService.infrastructure.Persistence.Configurations
 {
     public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
     {
