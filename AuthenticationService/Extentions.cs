@@ -44,8 +44,13 @@ namespace AuthenticationService
             // Register MassTransit
             services.AddMassTransit(x =>
             {
-                x.UsingInMemory((context, cfg) =>
+                x.UsingRabbitMq((context, cfg) =>
                 {
+                    cfg.Host("localhost", "/", h => {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+
                     cfg.ConfigureEndpoints(context);
                 });
             });
