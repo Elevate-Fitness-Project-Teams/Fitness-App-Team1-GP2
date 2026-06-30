@@ -7,20 +7,29 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace AuthenticationService.infrastructure.Security
 {
-    public class JwtTokenGenerator : IJwtTokenGenerator
+    public class TokenService : ITokenService
     {
         private readonly JWTOptions _options;
 
-        public JwtTokenGenerator(IOptions<JWTOptions> options)
+        public TokenService(IOptions<JWTOptions> options)
         {
             _options = options.Value;
         }
 
-        public string GenerateToken(User user)
+        public (string AccessToken, RefreshToken RefreshToken) GenerateTokens(User user)
+        {
+            var accessToken = GenerateJwtToken(user);
+            var refreshTokenEntity = GenerateRefreshToken(user);
+
+            return (accessToken, refreshTokenEntity);
+        }
+
+        private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_options.SecretKey);
@@ -36,7 +45,7 @@ namespace AuthenticationService.infrastructure.Security
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(_options.DurationInDays),
+                Expires = DateTime.UtcNow.AddMinutes(_options.AccessTokenDurationInMinutes),
                 Issuer = _options.Issuer,
                 Audience = _options.Audience,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -44,6 +53,23 @@ namespace AuthenticationService.infrastructure.Security
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        private RefreshToken GenerateRefreshToken(User user)
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            var tokenString = Convert.ToBase64String(randomNumber);
+
+            return new RefreshToken
+            {
+                UserId = user.Id,
+                Token = tokenString,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(_options.RefreshTokenDurationInDays),
+                IsDeleted = false
+            };
         }
     }
 }

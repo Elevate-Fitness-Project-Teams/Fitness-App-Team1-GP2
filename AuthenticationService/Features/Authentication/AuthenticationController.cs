@@ -1,6 +1,8 @@
 using AuthenticationService.Features.Authentication.Register;
 using AuthenticationService.Features.Authentication.Login;
 using AuthenticationService.Features.Authentication.CompleteProfile;
+using AuthenticationService.Features.Authentication.RefreshToken;
+using AuthenticationService.Features.Authentication.Logout;
 using AuthenticationService.Common.Shared;
 using AuthenticationService.Common.Exceptions;
 using MediatR;
@@ -68,6 +70,43 @@ namespace AuthenticationService.Features.Authentication
             };
 
             var response = ApiResponse<LoginViewModel>.Success(viewModel, "Login successful.", 200);
+
+            return Ok(response);
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
+        {
+            var command = new RefreshTokenCommand(request);
+            var result = await _mediator.Send(command, cancellationToken);
+
+            var viewModel = new RefreshTokenViewModel
+            {
+                Token = result.Token,
+                RefreshToken = result.RefreshToken
+            };
+
+            var response = ApiResponse<RefreshTokenViewModel>.Success(viewModel, "Token refreshed successfully.", 200);
+
+            return Ok(response);
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout(CancellationToken cancellationToken)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                throw new AppException("Unauthorized access.", System.Net.HttpStatusCode.Unauthorized, "AUTH_UNAUTHORIZED");
+            }
+
+            var command = new LogoutCommand(userId);
+            var result = await _mediator.Send(command, cancellationToken);
+
+            var response = ApiResponse<LogoutViewModel>.Success(result, "Logged out successfully.", 200);
 
             return Ok(response);
         }

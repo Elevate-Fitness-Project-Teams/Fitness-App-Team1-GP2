@@ -58,8 +58,8 @@ namespace AuthenticationService
             // Register HTTP Context Accessor
             services.AddHttpContextAccessor();
 
-            // Register JWT Token Generator
-            services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+            // Register Token Service
+            services.AddSingleton<ITokenService, TokenService>();
 
             // Register Unit of Work and Repositories
             services.AddScoped<IUnitOfWork, UnitOfWork>();

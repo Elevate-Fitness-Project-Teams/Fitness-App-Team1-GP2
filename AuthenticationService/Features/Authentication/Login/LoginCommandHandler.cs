@@ -14,19 +14,19 @@ namespace AuthenticationService.Features.Authentication.Login
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
-        private readonly IJwtTokenGenerator _jwtTokenGenerator;
+        private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly LoginManager _loginManager;
 
         public LoginCommandHandler(
             IUnitOfWork unitOfWork,
             IPasswordHasher passwordHasher,
-            IJwtTokenGenerator jwtTokenGenerator,
+            ITokenService tokenService,
             IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
-            _jwtTokenGenerator = jwtTokenGenerator;
+            _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
             _loginManager = new LoginManager(unitOfWork, passwordHasher);
         }
@@ -63,35 +63,18 @@ namespace AuthenticationService.Features.Authentication.Login
             await _loginManager.HandleSuccessfulLoginAsync(user, email, ipAddress, rehashNeeded ? newHash : null, cancellationToken);
 
             // 4. Generate Access & Refresh Tokens
-            var token = _jwtTokenGenerator.GenerateToken(user);
-            var refreshTokenString = GenerateSecureToken();
-            var refreshTokenEntity = new RefreshToken
-            {
-                UserId = user.Id,
-                Token = refreshTokenString,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(7),
-                IsDeleted = false
-            };
+            var (accessToken, refreshTokenEntity) = _tokenService.GenerateTokens(user);
 
             await _unitOfWork.RefreshTokens.AddAsync(refreshTokenEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return new LoginResponse
             {
-                Token = token,
-                RefreshToken = refreshTokenString,
+                Token = accessToken,
+                RefreshToken = refreshTokenEntity.Token,
                 ProfileCompleted = user.ProfileCompleted,
                 IsPremium = false
             };
-        }
-
-        private static string GenerateSecureToken()
-        {
-            var randomNumber = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
         }
     }
 }
