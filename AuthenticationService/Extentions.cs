@@ -1,4 +1,4 @@
-﻿using AuthenticationService.Common.Shared;
+using AuthenticationService.Common.Shared;
 using AuthenticationService.infrastructure.Context;
 using FitnessApp.Common.Behaviors;
 using FluentValidation;
@@ -19,7 +19,7 @@ namespace AuthenticationService
             services.ConfigureJWT(configuration);
 
 
-            services.AddDbContext<AuthenticationDbContext>(options =>
+            services.AddDbContext<AuthDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("AuthenticationConnection")));
 
             services.AddMediatR(cfg =>
