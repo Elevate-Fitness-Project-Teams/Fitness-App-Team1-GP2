@@ -1,4 +1,5 @@
 using AuthenticationService.Features.Authentication.Register;
+using AuthenticationService.Features.Authentication.Login;
 using AuthenticationService.Features.Authentication.CompleteProfile;
 using AuthenticationService.Common.Shared;
 using AuthenticationService.Common.Exceptions;
@@ -47,6 +48,26 @@ namespace AuthenticationService.Features.Authentication
             await _mediator.Send(command, cancellationToken);
 
             var response = ApiResponse<object?>.Success(null, "Profile lifecycle initiated.", 200);
+
+            return Ok(response);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
+        {
+            var command = new LoginCommand(request);
+            var result = await _mediator.Send(command, cancellationToken);
+
+            // Map DTO to ViewModel to comply with architectural boundaries
+            var viewModel = new LoginViewModel
+            {
+                Token = result.Token,
+                RefreshToken = result.RefreshToken,
+                ProfileCompleted = result.ProfileCompleted,
+                IsPremium = result.IsPremium
+            };
+
+            var response = ApiResponse<LoginViewModel>.Success(viewModel, "Login successful.", 200);
 
             return Ok(response);
         }

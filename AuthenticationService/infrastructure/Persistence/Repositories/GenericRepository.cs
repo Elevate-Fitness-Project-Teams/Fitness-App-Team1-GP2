@@ -47,14 +47,13 @@ namespace AuthenticationService.infrastructure.Persistence.Repositories
         public virtual async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
         {
             await _dbSet.AddAsync(entity, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
             return entity;
         }
 
         public virtual async Task UpdateAsync(T entity, CancellationToken cancellationToken = default)
         {
             _dbContext.Entry(entity).State = EntityState.Modified;
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await Task.CompletedTask;
         }
 
         public virtual async Task DeleteAsync(T entity, CancellationToken cancellationToken = default)
@@ -63,7 +62,7 @@ namespace AuthenticationService.infrastructure.Persistence.Repositories
             await UpdateAsync(entity, cancellationToken);
         }
 
-        protected IQueryable<T> GetQueryable(bool ignoreQueryFilters = false)
+        public IQueryable<T> GetQueryable(bool ignoreQueryFilters = false)
         {
             var query = _dbSet.AsQueryable();
 

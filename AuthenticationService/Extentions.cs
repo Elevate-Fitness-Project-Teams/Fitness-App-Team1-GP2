@@ -50,9 +50,15 @@ namespace AuthenticationService
                 });
             });
 
-            // Register Repositories
+            // Register HTTP Context Accessor
+            services.AddHttpContextAccessor();
+
+            // Register JWT Token Generator
+            services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+
+            // Register Unit of Work and Repositories
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped<IUserRepository, UserRepository>();
 
             // Register Global Exception Handler
             services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -63,6 +69,7 @@ namespace AuthenticationService
 
         private static void ConfigureJWT(this IServiceCollection services, IConfiguration configuration)
         {
+            services.Configure<JWTOptions>(configuration.GetSection("JWTOptions"));
             var jwt = configuration.GetSection("JWTOptions").Get<JWTOptions>();
             services.AddAuthentication(config =>
             {

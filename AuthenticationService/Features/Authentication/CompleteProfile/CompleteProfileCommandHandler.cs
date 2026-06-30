@@ -14,16 +14,16 @@ namespace AuthenticationService.Features.Authentication.CompleteProfile
 {
     public class CompleteProfileCommandHandler : IRequestHandler<CompleteProfileCommand>
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMemoryCache _cache;
         private readonly IPublishEndpoint _publishEndpoint;
 
         public CompleteProfileCommandHandler(
-            IUserRepository userRepository,
+            IUnitOfWork unitOfWork,
             IMemoryCache cache,
             IPublishEndpoint publishEndpoint)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _cache = cache;
             _publishEndpoint = publishEndpoint;
         }
@@ -31,7 +31,7 @@ namespace AuthenticationService.Features.Authentication.CompleteProfile
         public async Task Handle(CompleteProfileCommand request, CancellationToken cancellationToken)
         {
             // Retrieve user from database (respecting global query filter, i.e., ignoring soft-deleted users)
-            var user = await _userRepository.GetByIdAsync(request.UserId, ignoreQueryFilters: false, cancellationToken);
+            var user = await _unitOfWork.Users.GetByIdAsync(request.UserId, ignoreQueryFilters: false, cancellationToken);
 
             if (user == null)
             {
@@ -56,7 +56,8 @@ namespace AuthenticationService.Features.Authentication.CompleteProfile
 
             // Flip the profile completed flag in the database
             user.ProfileCompleted = true;
-            await _userRepository.UpdateAsync(user, cancellationToken);
+            await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Publish integration event downstream via MassTransit
             var integrationEvent = new ProfileLifecycleInitiatedEvent(

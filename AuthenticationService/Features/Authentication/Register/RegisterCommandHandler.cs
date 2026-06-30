@@ -3,6 +3,7 @@ using AuthenticationService.Common.Shared;
 using AuthenticationService.Domain.Contracts;
 using AuthenticationService.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Threading;
@@ -12,16 +13,16 @@ namespace AuthenticationService.Features.Authentication.Register
 {
     public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterDto>
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IMemoryCache _cache;
 
         public RegisterCommandHandler(
-            IUserRepository userRepository, 
+            IUnitOfWork unitOfWork, 
             IPasswordHasher passwordHasher,
             IMemoryCache cache)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _cache = cache;
         }
@@ -33,8 +34,9 @@ namespace AuthenticationService.Features.Authentication.Register
 
             var email = request.RegisterRequest.Email.Trim().ToLower();
 
-            // Check if the email exists in the database (even if soft-deleted to avoid DB unique index conflict)
-            var existingUser = await _userRepository.GetByEmailAsync(email, ignoreQueryFilters: true, cancellationToken);
+            // Check if the email exists in the database (even if soft-deleted)
+            var existingUser = await _unitOfWork.Users.GetQueryable(ignoreQueryFilters: true)
+                .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 
             if (existingUser != null)
             {
@@ -54,8 +56,9 @@ namespace AuthenticationService.Features.Authentication.Register
                 ProfileCompleted = false
             };
 
-            // Save to database via UserRepository
-            await _userRepository.AddAsync(user, cancellationToken);
+            // Save to database via UnitOfWork
+            await _unitOfWork.Users.AddAsync(user, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Cache registration profile details for life-cycle completion (30-minute sliding expiration)
             var cacheKey = $"reg-{user.Id}";
