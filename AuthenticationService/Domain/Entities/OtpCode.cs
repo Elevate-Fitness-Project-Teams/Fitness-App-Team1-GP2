@@ -1,4 +1,4 @@
-﻿namespace AuthenticationService.Domain.Entities
+namespace AuthenticationService.Domain.Entities
 {
     public class OtpCode : BaseEntity
     {
@@ -6,6 +6,7 @@
         public string Code { get; set; }
         public DateTime ExpiresAt { get; set; }
         public bool IsUsed { get; set; }
+        public DateTime CreatedAt { get; set; }
 
     }
 }

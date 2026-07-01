@@ -9,6 +9,7 @@ using AuthenticationService.Features.Login;
 using AuthenticationService.Features.Logout;
 using AuthenticationService.Features.RefreshToken;
 using AuthenticationService.Features.CompleteProfile;
+using AuthenticationService.Features.ForgotPassword;
 
 namespace AuthenticationService.Features
 {
@@ -92,6 +93,17 @@ namespace AuthenticationService.Features
             var result = await _mediator.Send(command, cancellationToken);
 
             var response = ApiResponse<LogoutDto>.Success(result, "Logged out successfully.", 200);
+
+            return Ok(response);
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken cancellationToken)
+        {
+            var command = new ForgotPasswordCommand(request);
+            var result = await _mediator.Send(command, cancellationToken);
+
+            var response = ApiResponse<ForgotPasswordDto>.Success(result, "OTP generated successfully.", 200);
 
             return Ok(response);
         }

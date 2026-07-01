@@ -22,7 +22,7 @@ namespace AuthenticationService.infrastructure.Persistence.Configurations
             builder.HasIndex(x => x.Email);
 
             builder.Property(x => x.Code)
-                .HasMaxLength(6)
+                .HasMaxLength(256)
                 .IsRequired();
 
             builder.Property(x => x.ExpiresAt)
@@ -30,6 +30,9 @@ namespace AuthenticationService.infrastructure.Persistence.Configurations
 
             builder.Property(x => x.IsUsed)
                 .HasDefaultValue(false);
+
+            builder.Property(x => x.CreatedAt)
+                .IsRequired();
         }
     }
 }
