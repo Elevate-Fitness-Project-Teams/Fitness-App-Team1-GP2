@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="AuthenticationService/AuthenticationService.csproj" Id="bd139dd6-eeee-4b30-a2a0-e26376b7822c" />
   <Project Path="FitnessApp/WorkoutService.csproj" />
 </Solution>
