@@ -11,6 +11,7 @@ using AuthenticationService.Features.RefreshToken;
 using AuthenticationService.Features.CompleteProfile;
 using AuthenticationService.Features.ForgotPassword;
 using AuthenticationService.Features.VerifyOtp;
+using AuthenticationService.Features.ResetPassword;
 
 namespace AuthenticationService.Features
 {
@@ -116,6 +117,17 @@ namespace AuthenticationService.Features
             var result = await _mediator.Send(command, cancellationToken);
 
             var response = ApiResponse<VerifyOtpDto>.Success(result, "OTP verified successfully.", 200);
+
+            return Ok(response);
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken cancellationToken)
+        {
+            var command = new ResetPasswordCommand(request);
+            var result = await _mediator.Send(command, cancellationToken);
+
+            var response = ApiResponse<ResetPasswordDto>.Success(result, "Password reset successfully.", 200);
 
             return Ok(response);
         }

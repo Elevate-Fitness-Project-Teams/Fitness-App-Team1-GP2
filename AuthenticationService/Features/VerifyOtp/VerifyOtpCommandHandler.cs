@@ -56,14 +56,13 @@ namespace AuthenticationService.Features.VerifyOtp
                 throw new AppException("OTP has expired.", System.Net.HttpStatusCode.BadRequest, "AUTH_OTP_EXPIRED");
             }
 
-            // Mark as used
             otpRecord.IsUsed = true;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Generate reset token
             var resetToken = Guid.NewGuid().ToString("N");
 
-            // Cache token
+            // Cache
             var cacheOptions = new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
