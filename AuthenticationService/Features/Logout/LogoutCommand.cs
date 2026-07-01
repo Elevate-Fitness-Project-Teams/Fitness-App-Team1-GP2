@@ -2,5 +2,5 @@ using MediatR;
 
 namespace AuthenticationService.Features.Logout
 {
-    public record LogoutCommand(int UserId) : IRequest<LogoutViewModel>;
+    public record LogoutCommand(int UserId) : IRequest<LogoutDto>;
 }

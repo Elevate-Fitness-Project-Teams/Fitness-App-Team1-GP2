@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace AuthenticationService.Features.Login
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginDto>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
@@ -31,7 +31,7 @@ namespace AuthenticationService.Features.Login
             _loginManager = new LoginManager(unitOfWork, passwordHasher);
         }
 
-        public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<LoginDto> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             if (request.LoginRequest is null)
                 throw new ArgumentNullException(nameof(request.LoginRequest), "Login request cannot be null.");
@@ -64,7 +64,7 @@ namespace AuthenticationService.Features.Login
             await _unitOfWork.RefreshTokens.AddAsync(refreshTokenEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return new LoginResponse
+            return new LoginDto
             {
                 Token = accessToken,
                 RefreshToken = refreshTokenEntity.Token,

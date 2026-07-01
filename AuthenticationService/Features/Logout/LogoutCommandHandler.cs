@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AuthenticationService.Features.Logout
 {
-    public class LogoutCommandHandler : IRequestHandler<LogoutCommand, LogoutViewModel>
+    public class LogoutCommandHandler : IRequestHandler<LogoutCommand, LogoutDto>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -17,7 +17,7 @@ namespace AuthenticationService.Features.Logout
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<LogoutViewModel> Handle(LogoutCommand request, CancellationToken cancellationToken)
+        public async Task<LogoutDto> Handle(LogoutCommand request, CancellationToken cancellationToken)
         {
             var activeTokens = await _unitOfWork.RefreshTokens.GetQueryable(ignoreQueryFilters: false)
                 .Where(t => t.UserId == request.UserId && !t.RevokedAt.HasValue && t.ExpiresAt > DateTime.UtcNow)
@@ -34,7 +34,7 @@ namespace AuthenticationService.Features.Logout
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
 
-            return new LogoutViewModel
+            return new LogoutDto
             {
                 LoggedOut = true
             };

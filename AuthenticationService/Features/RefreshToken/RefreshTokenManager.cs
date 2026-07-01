@@ -19,7 +19,7 @@ namespace AuthenticationService.Features.RefreshToken
             _tokenService = tokenService;
         }
 
-        public async Task<RefreshTokenResponse> RefreshAsync(string tokenString, CancellationToken cancellationToken)
+        public async Task<RefreshTokenDto> RefreshAsync(string tokenString, CancellationToken cancellationToken)
         {
             var storedToken = await _unitOfWork.RefreshTokens.GetQueryable(ignoreQueryFilters: false)
                 .FirstOrDefaultAsync(t => t.Token == tokenString, cancellationToken);
@@ -58,7 +58,7 @@ namespace AuthenticationService.Features.RefreshToken
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return new RefreshTokenResponse
+            return new RefreshTokenDto
             {
                 Token = accessToken,
                 RefreshToken = newRefreshTokenEntity.Token

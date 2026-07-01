@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AuthenticationService.Features.RefreshToken
 {
-    public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, RefreshTokenResponse>
+    public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, RefreshTokenDto>
     {
         private readonly RefreshTokenManager _refreshTokenManager;
 
@@ -15,7 +15,7 @@ namespace AuthenticationService.Features.RefreshToken
             _refreshTokenManager = new RefreshTokenManager(unitOfWork, tokenService);
         }
 
-        public async Task<RefreshTokenResponse> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
+        public async Task<RefreshTokenDto> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
         {
             if (request.RefreshTokenRequest is null)
                 throw new ArgumentNullException(nameof(request.RefreshTokenRequest), "Refresh token request cannot be null.");

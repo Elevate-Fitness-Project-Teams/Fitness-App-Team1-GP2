@@ -60,15 +60,7 @@ namespace AuthenticationService.Features
             var command = new LoginCommand(request);
             var result = await _mediator.Send(command, cancellationToken);
 
-            var viewModel = new LoginViewModel
-            {
-                Token = result.Token,
-                RefreshToken = result.RefreshToken,
-                ProfileCompleted = result.ProfileCompleted,
-                IsPremium = result.IsPremium
-            };
-
-            var response = ApiResponse<LoginViewModel>.Success(viewModel, "Login successful.", 200);
+            var response = ApiResponse<LoginDto>.Success(result, "Login successful.", 200);
 
             return Ok(response);
         }
@@ -79,13 +71,7 @@ namespace AuthenticationService.Features
             var command = new RefreshTokenCommand(request);
             var result = await _mediator.Send(command, cancellationToken);
 
-            var viewModel = new RefreshTokenViewModel
-            {
-                Token = result.Token,
-                RefreshToken = result.RefreshToken
-            };
-
-            var response = ApiResponse<RefreshTokenViewModel>.Success(viewModel, "Token refreshed successfully.", 200);
+            var response = ApiResponse<RefreshTokenDto>.Success(result, "Token refreshed successfully.", 200);
 
             return Ok(response);
         }
@@ -105,7 +91,7 @@ namespace AuthenticationService.Features
             var command = new LogoutCommand(userId);
             var result = await _mediator.Send(command, cancellationToken);
 
-            var response = ApiResponse<LogoutViewModel>.Success(result, "Logged out successfully.", 200);
+            var response = ApiResponse<LogoutDto>.Success(result, "Logged out successfully.", 200);
 
             return Ok(response);
         }
