@@ -32,7 +32,6 @@ namespace AuthenticationService.Common.Middlewares
                 statusCode = HttpStatusCode.BadRequest;
                 message = "Validation failed.";
                 
-                // Extract error code if present, otherwise fallback to standard code
                 errors = validationException.Errors
                     .Select(e => !string.IsNullOrEmpty(e.ErrorCode) ? e.ErrorCode : "VAL_REQUIRED_FIELD")
                     .Distinct()

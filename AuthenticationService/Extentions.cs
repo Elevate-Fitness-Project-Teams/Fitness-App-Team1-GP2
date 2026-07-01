@@ -35,13 +35,8 @@ namespace AuthenticationService
 
             services.AddValidatorsFromAssemblyContaining<Program>();
 
-            // Register Password Hasher
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
-
-            // Register Memory Cache
             services.AddMemoryCache();
-
-            // Register MassTransit
             services.AddMassTransit(x =>
             {
                 x.UsingRabbitMq((context, cfg) =>
@@ -55,17 +50,13 @@ namespace AuthenticationService
                 });
             });
 
-            // Register HTTP Context Accessor
             services.AddHttpContextAccessor();
 
-            // Register Token Service
             services.AddSingleton<ITokenService, TokenService>();
 
-            // Register Unit of Work and Repositories
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-            // Register Global Exception Handler
             services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();
 

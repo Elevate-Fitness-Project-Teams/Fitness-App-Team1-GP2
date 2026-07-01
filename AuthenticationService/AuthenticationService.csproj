@@ -26,8 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Authentication\CompleteProfile\" />
-    <Folder Include="Features\Authentication\Register\Validations\" />
+    <Folder Include="Features\CompleteProfile\" />
     <Folder Include="infrastructure\Persistence\Repositories\" />
   </ItemGroup>
 
