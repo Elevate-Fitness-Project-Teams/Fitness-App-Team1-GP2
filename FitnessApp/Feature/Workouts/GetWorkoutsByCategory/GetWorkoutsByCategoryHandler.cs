@@ -35,12 +35,7 @@ namespace WorkoutService.Feature.Workouts.GetWorkoutsByCategory
                     PlanName = x.WorkoutPlan!.Name
                 })
                 .ToListAsync(cancellationToken);
-            if(workouts is null)
-            {
-                return RequestResult<List<GetWorkoutsByCategoryResponse>>
-                    .Failure(ErrorCode.WorkoutNotFound);
-            }
-
+            
             return RequestResult<List<GetWorkoutsByCategoryResponse>>.Success(workouts);
         }
         #region Helper
