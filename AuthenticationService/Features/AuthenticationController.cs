@@ -10,6 +10,7 @@ using AuthenticationService.Features.Logout;
 using AuthenticationService.Features.RefreshToken;
 using AuthenticationService.Features.CompleteProfile;
 using AuthenticationService.Features.ForgotPassword;
+using AuthenticationService.Features.VerifyOtp;
 
 namespace AuthenticationService.Features
 {
@@ -104,6 +105,17 @@ namespace AuthenticationService.Features
             var result = await _mediator.Send(command, cancellationToken);
 
             var response = ApiResponse<ForgotPasswordDto>.Success(result, "OTP generated successfully.", 200);
+
+            return Ok(response);
+        }
+
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request, CancellationToken cancellationToken)
+        {
+            var command = new VerifyOtpCommand(request);
+            var result = await _mediator.Send(command, cancellationToken);
+
+            var response = ApiResponse<VerifyOtpDto>.Success(result, "OTP verified successfully.", 200);
 
             return Ok(response);
         }
