@@ -24,15 +24,7 @@ public class BrowseWorkoutsController(
             var errors = validationResult.Errors
                 .Select(x => x.ErrorMessage)
                 .ToList();
-
-            var response = new ApiResponse<PagedResult<BrowseWorkoutsResponse>>(
-                IsSuccess: false,
-                Message: "Validation failed.",
-                Data: null,
-                Errors: errors,
-                StatusCode: StatusCodes.Status400BadRequest,
-                Timestamp: DateTime.UtcNow
-            );
+            var response = ApiResponse<PagedResult<BrowseWorkoutsResponse>>.Failure(ErrorCode.ValidationError, errors);
 
             return BadRequest(response);
         }

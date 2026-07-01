@@ -1,6 +1,6 @@
 ﻿namespace WorkoutService.Domain.Entities
 {
-    public class WorkoutExercise
+    public class WorkoutExercise 
     {
         public int Id { get; set; }
 

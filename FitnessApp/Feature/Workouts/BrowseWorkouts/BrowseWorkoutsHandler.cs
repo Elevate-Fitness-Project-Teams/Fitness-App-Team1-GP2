@@ -1,21 +1,22 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WorkoutService.Common;
-using WorkoutService.Database;
+using WorkoutService.Contracts;
+using WorkoutService.Domain.Entities;
 using WorkoutService.Features.Workouts.BrowseWorkouts;
 
 namespace WorkoutService.Feature.Workouts.BrowseWorkouts;
 
-public class BrowseWorkoutsHandler(WorkoutDbContext _context)
+public class BrowseWorkoutsHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<BrowseWorkoutsQuery, RequestResult<PagedResult<BrowseWorkoutsResponse>>>
 {
     public async Task<RequestResult<PagedResult<BrowseWorkoutsResponse>>> Handle(
         BrowseWorkoutsQuery request,
         CancellationToken cancellationToken)
     {
-        var query = _context.Workouts
-            .AsNoTracking()
-            .AsQueryable();
+        var query = unitOfWork
+            .GetRepository<Workout>()
+            .GetAll();
 
         if (!string.IsNullOrWhiteSpace(request.category))
         {
@@ -63,6 +64,7 @@ public class BrowseWorkoutsHandler(WorkoutDbContext _context)
             TotalCount = totalCount
         };
 
-        return RequestResult<PagedResult<BrowseWorkoutsResponse>>.Success(pagedResult);
+        return RequestResult<PagedResult<BrowseWorkoutsResponse>>
+            .Success(pagedResult);
     }
 }

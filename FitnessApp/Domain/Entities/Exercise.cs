@@ -2,7 +2,7 @@
 
 namespace WorkoutService.Domain.Entities
 {
-    public class Exercise
+    public class Exercise 
     {
         public int ExerciseId { get; set; }
 
