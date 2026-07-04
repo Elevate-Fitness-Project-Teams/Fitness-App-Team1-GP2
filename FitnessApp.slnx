@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="FCEService/FCEService.csproj" Id="6feda009-d740-4617-bb38-5f0260f259a3" />
   <Project Path="FitnessApp/WorkoutService.csproj" />
 </Solution>
