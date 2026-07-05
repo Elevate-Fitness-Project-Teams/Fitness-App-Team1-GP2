@@ -6,7 +6,7 @@ namespace FCEService.Domain.Aggregates
 {
     public class CalculatedMetrics : BaseEntity
     {
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         public double BMR { get; private set; }
         public double TDEE { get; private set; }
         public double CalorieTarget { get; private set; } 
@@ -57,12 +57,12 @@ namespace FCEService.Domain.Aggregates
 
         private static BMRRange GetBMRRange(Gender gender)
         {
-            if(gender == Gender.Male)
-                return new MaleBMRRange();
-            else if(gender == Gender.Female)
-                return new FemaleBMRRange();
-            else
-                throw new ArgumentException("Invalid gender");
+            return gender switch
+            {
+                Gender.Male => new BMRRange(1700, 2100),
+                Gender.Female => new BMRRange(1300, 1600),
+                _ => throw new ArgumentException("Invalid gender")
+            };
         }
 
         private static double CalculateTDEE(double bmr, Activity activity)

@@ -32,6 +32,10 @@ namespace FCEService.Infrastructure.Persistance
         {
             _context.Set<T>().Add(entity);
         }
+        public async Task SaveChangeAsync(CancellationToken cancellationToken)
+        {
+            await _context.SaveChangesAsync();
+        }
 
         public void Update(T entity, params string[] modifiedParams)
         {

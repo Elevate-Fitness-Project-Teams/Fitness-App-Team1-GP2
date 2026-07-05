@@ -6,7 +6,7 @@ namespace FCEService.Domain.Aggregates
 {
     public class UserFitnessStats:BaseEntity
     {   
-        public Guid userId { get; set; }
+        public int userId { get; set; }
         public  PhysicalStats physicalStats { get; set; }
         public Goal goal { get; set; } 
         public Activity activity { get; set; }

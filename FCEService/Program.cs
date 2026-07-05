@@ -1,4 +1,6 @@
 
+using FCEService.Infrastructure.DependencyInjection;
+
 namespace FCEService
 {
     public class Program
@@ -7,7 +9,7 @@ namespace FCEService
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            
+            DependencyInjection.AddWebServices(builder.Services,builder.Configuration);
 
             var app = builder.Build();
 
@@ -20,7 +22,7 @@ namespace FCEService
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
 
             app.MapControllers();

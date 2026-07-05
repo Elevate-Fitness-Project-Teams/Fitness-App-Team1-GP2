@@ -35,17 +35,13 @@ namespace FCEService.Infrastructure.Persistance.Configuration
                    .HasMaxLength(20)
                    .IsRequired();
 
-            builder.OwnsOne(x => x.BMRRange, r =>
+            builder.OwnsOne(x => x.BMRRange, navigation =>
             {
-                r.Property(x => x.Min)
-                 .HasColumnName("BMRRangeMin")
-                 .IsRequired();
-
-                r.Property(x => x.Max)
-                 .HasColumnName("BMRRangeMax")
-                 .IsRequired();
+                navigation.ToTable("BMRRange");
+                navigation.WithOwner();
+                navigation.Property(b => b.Min).HasColumnName("Min");
+                navigation.Property(b => b.Max).HasColumnName("Max");
             });
-
         }
     }
 }

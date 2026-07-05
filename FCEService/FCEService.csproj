@@ -9,9 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Features\WeightGoalActivity\ViewModel\**" />
     <Compile Remove="Infrastructure\NewFolder\**" />
+    <Content Remove="Features\WeightGoalActivity\ViewModel\**" />
     <Content Remove="Infrastructure\NewFolder\**" />
+    <EmbeddedResource Remove="Features\WeightGoalActivity\ViewModel\**" />
     <EmbeddedResource Remove="Infrastructure\NewFolder\**" />
+    <None Remove="Features\WeightGoalActivity\ViewModel\**" />
     <None Remove="Infrastructure\NewFolder\**" />
   </ItemGroup>
 
