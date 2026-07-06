@@ -1,4 +1,4 @@
-using AuthenticationService.Common.Exceptions;
+using FitnessApp.Shared.Exceptions;
 using AuthenticationService.Domain.Contracts;
 using AuthenticationService.Domain.Entities;
 using MediatR;

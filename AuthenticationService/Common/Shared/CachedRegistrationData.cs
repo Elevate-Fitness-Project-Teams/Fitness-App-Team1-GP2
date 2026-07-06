@@ -1,4 +1,4 @@
-namespace AuthenticationService.Common.Shared
+namespace FitnessApp.Shared.Models
 {
     public record CachedRegistrationData(
         string FirstName, 

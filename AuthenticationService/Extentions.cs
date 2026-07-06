@@ -1,6 +1,6 @@
-using AuthenticationService.Common.Middlewares;
-using AuthenticationService.Common.Shared;
-using FitnessApp.Common.Behaviors;
+using FitnessApp.Shared.Middlewares;
+using FitnessApp.Shared.Models;
+using FitnessApp.Shared.Behaviors;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;

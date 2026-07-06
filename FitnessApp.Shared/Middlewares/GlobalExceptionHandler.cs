@@ -1,11 +1,18 @@
-using AuthenticationService.Common.Exceptions;
-using AuthenticationService.Common.Shared;
+using FitnessApp.Shared.Exceptions;
+using FitnessApp.Shared.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace AuthenticationService.Common.Middlewares
+namespace FitnessApp.Shared.Middlewares
 {
     public class GlobalExceptionHandler : IExceptionHandler
     {

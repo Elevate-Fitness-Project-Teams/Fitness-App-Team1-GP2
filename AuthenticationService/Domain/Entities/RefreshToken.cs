@@ -1,4 +1,4 @@
-﻿namespace AuthenticationService.Domain.Entities
+namespace AuthenticationService.Domain.Entities
 {
     public class RefreshToken : BaseEntity
     {

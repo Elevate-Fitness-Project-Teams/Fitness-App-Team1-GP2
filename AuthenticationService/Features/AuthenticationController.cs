@@ -1,5 +1,5 @@
-using AuthenticationService.Common.Shared;
-using AuthenticationService.Common.Exceptions;
+using FitnessApp.Shared.Models;
+using FitnessApp.Shared.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

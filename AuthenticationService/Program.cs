@@ -1,3 +1,4 @@
+using FitnessApp.Shared.Extensions;
 
 namespace AuthenticationService
 {
@@ -10,7 +11,7 @@ namespace AuthenticationService
             builder.Services.AddWebApplicationServices(builder.Configuration);
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSharedSwagger();
 
             var app = builder.Build();
 

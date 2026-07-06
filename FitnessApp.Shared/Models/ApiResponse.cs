@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 
-namespace AuthenticationService.Common.Shared
+namespace FitnessApp.Shared.Models
 {
     public class ApiResponse<T>
     {
         public bool IsSuccess { get; set; }
-        public string Message { get; set; }
-        public T Data { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public T? Data { get; set; }
         public List<string> Errors { get; set; } = new();
         public int StatusCode { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;

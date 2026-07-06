@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace AuthenticationService.Common.Exceptions
+namespace FitnessApp.Shared.Exceptions
 {
     public class DuplicateEmailException : AppException
     {
