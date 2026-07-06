@@ -10,12 +10,7 @@ namespace UserProfileService
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
-            builder.Services.AddControllers();
-            builder.Services.AddSharedSwagger();
-
-            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-            builder.Services.AddProblemDetails();
+            builder.Services.AddWebApplicationServices(builder.Configuration);
 
             var app = builder.Build();
 
@@ -30,6 +25,7 @@ namespace UserProfileService
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
