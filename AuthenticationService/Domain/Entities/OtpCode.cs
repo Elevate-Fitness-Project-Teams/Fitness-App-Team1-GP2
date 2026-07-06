@@ -7,6 +7,7 @@ namespace AuthenticationService.Domain.Entities
         public DateTime ExpiresAt { get; set; }
         public bool IsUsed { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int FailedAttempts { get; set; }
 
     }
 }

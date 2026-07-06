@@ -42,11 +42,25 @@ namespace AuthenticationService.Features.VerifyOtp
                 throw new AppException("Invalid OTP.", System.Net.HttpStatusCode.BadRequest, "AUTH_INVALID_OTP");
             }
 
+            // Check brute-force
+            if (otpRecord.FailedAttempts >= 3)
+            {
+                if (!otpRecord.IsUsed)
+                {
+                    otpRecord.IsUsed = true;
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                }
+                throw new AppException("Too many failed attempts. Please request a new OTP.", System.Net.HttpStatusCode.BadRequest, "AUTH_OTP_LOCKED");
+            }
+
             // Verify hash
             var verificationResult = _passwordHasher.VerifyPassword(otp, otpRecord.Code);
             
             if (!verificationResult.Verified)
             {
+                otpRecord.FailedAttempts++;
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
                 throw new AppException("Invalid OTP.", System.Net.HttpStatusCode.BadRequest, "AUTH_INVALID_OTP");
             }
 

@@ -16,19 +16,20 @@ namespace AuthenticationService.Features.Login
         private readonly IPasswordHasher _passwordHasher;
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly LoginManager _loginManager;
+        private readonly ILoginManager _loginManager;
 
         public LoginCommandHandler(
             IUnitOfWork unitOfWork,
             IPasswordHasher passwordHasher,
             ITokenService tokenService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILoginManager loginManager)
         {
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
-            _loginManager = new LoginManager(unitOfWork, passwordHasher);
+            _loginManager = loginManager;
         }
 
         public async Task<LoginDto> Handle(LoginCommand request, CancellationToken cancellationToken)

@@ -10,6 +10,7 @@ using AuthenticationService.infrastructure.Persistence.Context;
 using AuthenticationService.Domain.Contracts;
 using AuthenticationService.infrastructure.Persistence.Repositories;
 using AuthenticationService.infrastructure.Security;
+using AuthenticationService.Features.Login;
 
 using MassTransit;
 
@@ -56,6 +57,8 @@ namespace AuthenticationService
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            
+            services.AddScoped<ILoginManager, LoginManager>();
 
             services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();

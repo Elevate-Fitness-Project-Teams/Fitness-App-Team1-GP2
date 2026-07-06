@@ -4,6 +4,7 @@ using AuthenticationService.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,8 +54,7 @@ namespace AuthenticationService.Features.ForgotPassword
             }
 
             //Code Generation
-            var random = new Random();
-            var otpCode = random.Next(100000, 999999).ToString();
+            var otpCode = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
 
             var hashedCode = _passwordHasher.HashPassword(otpCode);
 

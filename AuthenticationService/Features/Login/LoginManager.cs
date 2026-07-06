@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace AuthenticationService.Features.Login
 {
-    public class LoginManager
+    public class LoginManager : ILoginManager
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
