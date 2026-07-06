@@ -15,12 +15,26 @@ namespace FCEService.Features.CalculatedMetrics.Orchestrators
         }
         public async Task<RequestResult<CalculatedMetricsResponseDTO>> Handle(CalculatedMetricsOrchestrator request, CancellationToken cancellationToken)
         {
+            var result = await _mediator.Send(new Queries.GetCalculatedMetricsByUseridQuery(request.userId), cancellationToken);
+            if(result.IsSuccess)
+            {
+                var _calculatedMetrics=result.Data;
+                var _responseDTO = new CalculatedMetricsResponseDTO(
+                    request.userId,
+                    _calculatedMetrics.BMR,
+                    _calculatedMetrics.TDEE,
+                    _calculatedMetrics.CalorieTarget,
+                    _calculatedMetrics.BMRRange,
+                    _calculatedMetrics.BMRStatus
+                );
+                return RequestResult<CalculatedMetricsResponseDTO>.Success(_responseDTO, "Calculated metrics is already exist and retrieved successfully.");
+            }
             var queryResult = await _mediator.Send(new Queries.GetDetailsandCalculatedMetricsQuery(request.userId), cancellationToken);
+            var calculatedMetrics = queryResult.Data;
             if (!queryResult.IsSuccess)
             {
                 return RequestResult<CalculatedMetricsResponseDTO>.Failure(queryResult.Message);
             }
-            var calculatedMetrics = queryResult.Data;
             await _mediator.Send(new Commands.CalculatedMetricsCommand(calculatedMetrics), cancellationToken);
             var responseDTO = new CalculatedMetricsResponseDTO(
                 request.userId,

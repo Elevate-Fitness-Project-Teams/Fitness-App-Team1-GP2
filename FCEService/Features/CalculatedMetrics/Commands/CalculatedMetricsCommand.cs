@@ -16,7 +16,7 @@ namespace FCEService.Features.CalculatedMetrics.Commands
         }
         public async Task<RequestResult<bool>> Handle(CalculatedMetricsCommand request, CancellationToken cancellationToken)
         {
-            _repository.Add(request.calculatedMetrics);
+             _repository.Add(request.calculatedMetrics);
             await _repository.SaveChangeAsync(cancellationToken);
             return RequestResult<bool>.Success(true, "Calculated metrics saved successfully.");
         }
