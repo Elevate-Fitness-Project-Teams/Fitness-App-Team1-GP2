@@ -15,20 +15,20 @@ namespace FCEService.Domain.Aggregates
 
         private CalculatedMetrics() { }
 
-        public static CalculatedMetrics Calculate(UserFitnessStats stats)
+        public static CalculatedMetrics Calculate(int userId, PhysicalStats stats, Activity activety, Goal goal)
         {
-            var bmr = CalculateBMR(stats.physicalStats);
-            var tdee = CalculateTDEE(bmr, stats.activity);
-            var calorieTarget = CalculateCalorieTarget(tdee, stats.goal);
-            var BMRRange = GetBMRRange(stats.physicalStats.Gender);
+            var bmr = CalculateBMR(stats);
+            var tdee = CalculateTDEE(bmr, activety);
+            var calorieTarget = CalculateCalorieTarget(tdee, goal);
+            var BMRRange = GetBMRRange(stats.Gender);
 
             return new CalculatedMetrics
             {
-                UserId = stats.userId,
+                UserId = userId,
                 BMR = Math.Round(bmr, 2),
                 TDEE = Math.Round(tdee, 2),
                 CalorieTarget = calorieTarget,
-                BMRRange = GetBMRRange(stats.physicalStats.Gender),
+                BMRRange = GetBMRRange(stats.Gender),
                 BMRStatus = GetBMRStatus(bmr, BMRRange)
             };
         }

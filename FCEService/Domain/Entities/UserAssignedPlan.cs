@@ -4,7 +4,7 @@ namespace FCEService.Domain.Entities
 {
     public class UserAssignedPlan : BaseEntity
     {
-        public Guid userId { get; set; }
+        public int userId { get; set; }
         public Goal goal { get; private set; }
         public double calorieIntake { get; private set; } //CalroieAllocation
         public string? WorkoutPlan { get; private set; }
@@ -13,7 +13,7 @@ namespace FCEService.Domain.Entities
 
         private UserAssignedPlan() { }
 
-        public static UserAssignedPlan Create(Guid userId, Goal goal, double calorieIntake, string? workoutPlan, string? nutritionPlan)
+        public static UserAssignedPlan Create(int userId, Goal goal, double calorieIntake, string? workoutPlan, string? nutritionPlan)
             => new UserAssignedPlan
             {
                 userId = userId,

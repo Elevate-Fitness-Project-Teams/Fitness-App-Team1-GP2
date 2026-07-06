@@ -11,13 +11,8 @@ namespace FCEService.Features.WeightGoalActivity
     [Route("api/v1/weight-goal-activity")]
     public class WeightGoalActivityEndpoint : ControllerBase
     {
-        private readonly IMediator _mediator;
-        public WeightGoalActivityEndpoint(IMediator mediator) { 
-            _mediator = mediator;
-        }
-
         [HttpPost]
-        public async Task<EndPointResponse<int>> CreateWeightGoalActivity([FromBody] WeightGoalActivityRequestViewModel command)
+        public async Task<EndPointResponse<int>> CreateWeightGoalActivity([FromBody] WeightGoalActivityRequestViewModel command, [FromServices] IMediator _mediator)
         {
             var result = await _mediator.Send(new WeightGoalActivityCommand(
                 userId: command.userId,

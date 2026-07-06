@@ -3,5 +3,6 @@
     public enum RequestErrorCode
     {
         None,
+        NotFound,
     }
 }

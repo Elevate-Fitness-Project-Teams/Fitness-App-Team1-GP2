@@ -16,11 +16,11 @@ namespace FCEService.Infrastructure.Persistance.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            modelBuilder.ApplyConfiguration(new CalculatedMetricsConfiguration());
-            modelBuilder.ApplyConfiguration(new UserAssignedPlansConfiguration());
-            modelBuilder.ApplyConfiguration(new UserFitnessStatsConfiguration());
-            modelBuilder.ApplyConfiguration(new UserPlanHistoryConfiguration());
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(FCE_DBContext).Assembly);
+            //modelBuilder.ApplyConfiguration(new CalculatedMetricsConfiguration());
+            //modelBuilder.ApplyConfiguration(new UserAssignedPlansConfiguration());
+            //modelBuilder.ApplyConfiguration(new UserFitnessStatsConfiguration());
+            //modelBuilder.ApplyConfiguration(new UserPlanHistoryConfiguration());
         }
     }
 }

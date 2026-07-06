@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FCEService.Migrations
 {
     [DbContext(typeof(FCE_DBContext))]
-    [Migration("20260705011849_init")]
+    [Migration("20260705172334_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -164,8 +164,8 @@ namespace FCEService.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<Guid>("userId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("userId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

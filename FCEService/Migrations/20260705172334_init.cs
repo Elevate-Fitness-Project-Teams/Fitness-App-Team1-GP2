@@ -38,7 +38,7 @@ namespace FCEService.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    userId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    userId = table.Column<int>(type: "int", nullable: false),
                     goal = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     calorieIntake = table.Column<double>(type: "float", nullable: false),
                     WorkoutPlan = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
