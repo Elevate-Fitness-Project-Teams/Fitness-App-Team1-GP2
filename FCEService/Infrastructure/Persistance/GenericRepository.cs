@@ -39,13 +39,13 @@ namespace FCEService.Infrastructure.Persistance
 
         public void Update(T entity, params string[] modifiedParams)
         {
-            var local = _context.Set<T>().Local
-                .FirstOrDefault(x => x.Id == entity.Id);
+            var local = _context.Set<T>().Local.FirstOrDefault(x => x.Id == entity.Id);
 
             EntityEntry entry;
+
             if (local == null)
             {
-                _context.Set<T>().Attach(entity);
+                _context.Attach(entity);
                 entry = _context.Entry(entity);
             }
             else
@@ -55,9 +55,15 @@ namespace FCEService.Infrastructure.Persistance
 
             foreach (var propName in modifiedParams)
             {
-                var value = entity.GetType()
-                                  .GetProperty(propName)!
-                                  .GetValue(entity);
+                var property = entry.Metadata.FindProperty(propName);
+
+                if (property == null)
+                {
+                    throw new InvalidOperationException(
+                        $"'{propName}' is not a mapped scalar property of {typeof(T).Name}.");
+                }
+
+                var value = typeof(T).GetProperty(propName)!.GetValue(entity);
 
                 entry.Property(propName).CurrentValue = value;
                 entry.Property(propName).IsModified = true;

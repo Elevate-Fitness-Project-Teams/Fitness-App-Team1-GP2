@@ -17,7 +17,8 @@ namespace FCEService.Features.CalculatedMetrics.Queries
         }
         public async Task<RequestResult<FCEService.Domain.Aggregates.CalculatedMetrics>> Handle(GetDetailsandCalculatedMetricsQuery request, CancellationToken cancellationToken)
         {
-            var userFitnessStats = await _repository.Get(x => x.userId == request.userId && x.IsActive).Select(u => new { u.physicalStats, u.goal, u.activity, u.IsActive }).FirstOrDefaultAsync(cancellationToken);
+            var userFitnessStats = await _repository.Get(x => x.userId == request.userId && x.IsActive).AsNoTracking()
+                .Select(u => new { u.physicalStats, u.goal, u.activity, u.IsActive }).FirstOrDefaultAsync(cancellationToken);
             if (userFitnessStats == null)
             {
                 return RequestResult<FCEService.Domain.Aggregates.CalculatedMetrics>.Failure("user fitness stats not found or not retrieved.");
