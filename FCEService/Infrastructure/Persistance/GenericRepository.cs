@@ -26,7 +26,7 @@ namespace FCEService.Infrastructure.Persistance
         }
         public IQueryable<T> Get(Expression<Func<T, bool>> expression)
         {
-            return GetAll().Where(expression);
+            return _context.Set<T>().Where(expression);
         }
         public void Add(T entity)
         {

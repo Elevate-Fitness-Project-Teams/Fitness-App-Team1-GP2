@@ -21,6 +21,8 @@ namespace FCEService.Migrations
                     BMR = table.Column<double>(type: "float", nullable: false),
                     TDEE = table.Column<double>(type: "float", nullable: false),
                     CalorieTarget = table.Column<double>(type: "float", nullable: false),
+                    BMRRangeMin = table.Column<double>(type: "float", nullable: false),
+                    BMRRangeMax = table.Column<double>(type: "float", nullable: false),
                     BMRStatus = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -85,8 +87,9 @@ namespace FCEService.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     ExternalPlanId = table.Column<int>(type: "int", nullable: false),
+                    AssignedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ResonForChange = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -97,25 +100,6 @@ namespace FCEService.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserPlanHistory", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "BMRRange",
-                columns: table => new
-                {
-                    CalculatedMetricsId = table.Column<int>(type: "int", nullable: false),
-                    Min = table.Column<double>(type: "float", nullable: false),
-                    Max = table.Column<double>(type: "float", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BMRRange", x => x.CalculatedMetricsId);
-                    table.ForeignKey(
-                        name: "FK_BMRRange_CalculatedMetrics_CalculatedMetricsId",
-                        column: x => x.CalculatedMetricsId,
-                        principalTable: "CalculatedMetrics",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -145,7 +129,7 @@ namespace FCEService.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "BMRRange");
+                name: "CalculatedMetrics");
 
             migrationBuilder.DropTable(
                 name: "UserAssignedPlans");
@@ -155,9 +139,6 @@ namespace FCEService.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserPlanHistory");
-
-            migrationBuilder.DropTable(
-                name: "CalculatedMetrics");
         }
     }
 }

@@ -37,10 +37,11 @@ namespace FCEService.Infrastructure.Persistance.Configuration
 
             builder.OwnsOne(x => x.BMRRange, navigation =>
             {
-                navigation.ToTable("BMRRange");
-                navigation.WithOwner();
-                navigation.Property(b => b.Min).HasColumnName("Min");
-                navigation.Property(b => b.Max).HasColumnName("Max");
+                navigation.Property(b => b.Min)
+                          .HasColumnName("BMRRangeMin");
+
+                navigation.Property(b => b.Max)
+                          .HasColumnName("BMRRangeMax");
             });
         }
     }

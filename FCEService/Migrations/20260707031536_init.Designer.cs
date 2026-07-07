@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FCEService.Migrations
 {
     [DbContext(typeof(FCE_DBContext))]
-    [Migration("20260705172334_init")]
+    [Migration("20260707031536_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -182,6 +182,9 @@ namespace FCEService.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -204,8 +207,8 @@ namespace FCEService.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -223,15 +226,15 @@ namespace FCEService.Migrations
 
                             b1.Property<double>("Max")
                                 .HasColumnType("float")
-                                .HasColumnName("Max");
+                                .HasColumnName("BMRRangeMax");
 
                             b1.Property<double>("Min")
                                 .HasColumnType("float")
-                                .HasColumnName("Min");
+                                .HasColumnName("BMRRangeMin");
 
                             b1.HasKey("CalculatedMetricsId");
 
-                            b1.ToTable("BMRRange", (string)null);
+                            b1.ToTable("CalculatedMetrics");
 
                             b1.WithOwner()
                                 .HasForeignKey("CalculatedMetricsId");

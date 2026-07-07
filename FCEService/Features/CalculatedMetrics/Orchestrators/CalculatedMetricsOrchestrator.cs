@@ -15,7 +15,7 @@ namespace FCEService.Features.CalculatedMetrics.Orchestrators
         }
         public async Task<RequestResult<CalculatedMetricsResponseDTO>> Handle(CalculatedMetricsOrchestrator request, CancellationToken cancellationToken)
         {
-            var result = await _mediator.Send(new Queries.GetCalculatedMetricsByUseridQuery(request.userId), cancellationToken);
+            var result = await _mediator.Send(new GetMetricsByUserId.Queries.GetCalculatedMetricsByUseridQuery(request.userId), cancellationToken);
             if(result.IsSuccess)
             {
                 var _calculatedMetrics=result.Data;
