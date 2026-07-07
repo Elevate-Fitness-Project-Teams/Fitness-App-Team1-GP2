@@ -38,7 +38,6 @@ namespace FitnessApp.UserProfileService.Infrastructure.Services
                 await file.CopyToAsync(fileStream, cancellationToken);
             }
 
-            // Return relative URL
             return $"/uploads/{folderName}/{uniqueFileName}";
         }
     }

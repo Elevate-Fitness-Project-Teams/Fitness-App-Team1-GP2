@@ -18,7 +18,6 @@ namespace AuthenticationService.infrastructure.Persistence.Context
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AuthDbContext).Assembly);
 
-            // Apply global query filter for Soft Delete (BaseEntity.IsDeleted) dynamically
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
