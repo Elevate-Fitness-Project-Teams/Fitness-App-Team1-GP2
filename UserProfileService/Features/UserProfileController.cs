@@ -109,5 +109,25 @@ namespace FitnessApp.UserProfileService.Features
 
             return StatusCode(result.StatusCode, result);
         }
+
+        [HttpPut("settings")]
+        public async Task<IActionResult> UpdateSettings([FromBody] Features.Commands.UpdateSettings.UpdateSettingsRequest request)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
+            {
+                var errorResponse = ApiResponse<string>.Failure(
+                    new List<string> { "AUTH_TOKEN_INVALID" },
+                    "Invalid or missing user authentication token.",
+                    401);
+                return StatusCode(401, errorResponse);
+            }
+
+            var command = new Features.Commands.UpdateSettings.UpdateSettingsCommand(userId, request);
+            var result = await _mediator.Send(command);
+
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }
