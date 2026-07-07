@@ -1,9 +1,10 @@
-using AuthenticationService.Common.Exceptions;
+using FitnessApp.Shared.Exceptions;
 using AuthenticationService.Domain.Contracts;
 using AuthenticationService.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +31,7 @@ namespace AuthenticationService.Features.ForgotPassword
             var userExists = await _unitOfWork.Users.GetQueryable(ignoreQueryFilters: false)
                 .AnyAsync(u => u.Email == email, cancellationToken);
 
-            // If user doesn't exist, skip and return success to prevent enumeration
+
             if (!userExists)
             {
                 return new ForgotPasswordDto
@@ -41,7 +42,6 @@ namespace AuthenticationService.Features.ForgotPassword
                 };
             }
 
-            // (30 seconds)
             var thirtySecondsAgo = DateTime.UtcNow.AddSeconds(-30);
             
             var recentOtpExists = await _unitOfWork.OtpCodes.GetQueryable(ignoreQueryFilters: false)
@@ -52,9 +52,7 @@ namespace AuthenticationService.Features.ForgotPassword
                 throw new AppException("Please wait before requesting another OTP.", System.Net.HttpStatusCode.TooManyRequests, "RATE_OTP_RESEND_TOO_SOON");
             }
 
-            //Code Generation
-            var random = new Random();
-            var otpCode = random.Next(100000, 999999).ToString();
+            var otpCode = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
 
             var hashedCode = _passwordHasher.HashPassword(otpCode);
 
@@ -70,7 +68,6 @@ namespace AuthenticationService.Features.ForgotPassword
             await _unitOfWork.OtpCodes.AddAsync(otpEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            //send the OTP via Email
 
             return new ForgotPasswordDto
             {

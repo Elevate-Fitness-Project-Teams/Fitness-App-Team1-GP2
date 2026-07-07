@@ -18,7 +18,6 @@ namespace AuthenticationService.infrastructure.Persistence.Configurations
             builder.Property(x => x.UserId)
                 .IsRequired();
 
-            // Configure foreign key pointing to User (Cascade Delete behavior)
             builder.HasOne<User>()
                 .WithMany()
                 .HasForeignKey(x => x.UserId)

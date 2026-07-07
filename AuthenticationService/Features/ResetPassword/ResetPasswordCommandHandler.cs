@@ -1,4 +1,4 @@
-using AuthenticationService.Common.Exceptions;
+using FitnessApp.Shared.Exceptions;
 using AuthenticationService.Domain.Contracts;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +31,6 @@ namespace AuthenticationService.Features.ResetPassword
             var resetToken = request.ResetPasswordRequest.ResetToken;
             var newPassword = request.ResetPasswordRequest.NewPassword;
 
-            //Verify token in cache
             var cacheKey = $"reset-{resetToken}";
             if (!_memoryCache.TryGetValue(cacheKey, out string? email) || string.IsNullOrEmpty(email))
             {
@@ -49,7 +48,6 @@ namespace AuthenticationService.Features.ResetPassword
             var newHash = _passwordHasher.HashPassword(newPassword);
             user.PasswordHash = newHash;
 
-            // 4. Revoke active refresh tokens to force global logout
             var activeRefreshTokens = await _unitOfWork.RefreshTokens.GetQueryable(ignoreQueryFilters: false)
                 .Where(t => t.UserId == user.Id && !t.RevokedAt.HasValue && t.ExpiresAt > DateTime.UtcNow)
                 .ToListAsync(cancellationToken);
@@ -59,7 +57,6 @@ namespace AuthenticationService.Features.ResetPassword
                 token.RevokedAt = DateTime.UtcNow;
             }
 
-            // remove token from cache
             _memoryCache.Remove(cacheKey);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);

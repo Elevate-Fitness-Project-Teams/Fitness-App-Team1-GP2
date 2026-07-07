@@ -1,4 +1,4 @@
-using AuthenticationService.Common.Exceptions;
+using FitnessApp.Shared.Exceptions;
 using AuthenticationService.Domain.Contracts;
 using AuthenticationService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace AuthenticationService.Features.Login
 {
-    public class LoginManager
+    public class LoginManager : ILoginManager
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
@@ -42,7 +42,6 @@ namespace AuthenticationService.Features.Login
                 }
                 else
                 {
-                    // Lock expired
                     user.isLockedOut = false;
                     user.LockedUntil = null;
                     await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
@@ -88,14 +87,12 @@ namespace AuthenticationService.Features.Login
 
         public async Task HandleSuccessfulLoginAsync(User user, string email, string ipAddress, string? newHash, CancellationToken cancellationToken)
         {
-            // Reset lockout
             if (user.isLockedOut || user.LockedUntil.HasValue)
             {
                 user.isLockedOut = false;
                 user.LockedUntil = null;
             }
 
-            // Update PasswordHash if rehash is needed
             if (!string.IsNullOrEmpty(newHash))
             {
                 user.PasswordHash = newHash;
@@ -103,7 +100,6 @@ namespace AuthenticationService.Features.Login
 
             await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
 
-            // success
             var successAttempt = new LoginAttempt
             {
                 Email = email,

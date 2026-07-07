@@ -1,4 +1,6 @@
 <Solution>
-  <Project Path="AuthenticationService/AuthenticationService.csproj" Id="bd139dd6-eeee-4b30-a2a0-e26376b7822c" />
+  <Project Path="AuthenticationService/FitnessApp.AuthenticationService.csproj" Id="bd139dd6-eeee-4b30-a2a0-e26376b7822c" />
+  <Project Path="FitnessApp.Shared/FitnessApp.Shared.csproj" Id="67d5c03a-64a1-42fa-9ba5-0f0cc87092ab" />
   <Project Path="FitnessApp/WorkoutService.csproj" />
+  <Project Path="UserProfileService/FitnessApp.UserProfileService.csproj" Id="f1512792-ac4a-45e7-b193-0e34a83d7461" />
 </Solution>

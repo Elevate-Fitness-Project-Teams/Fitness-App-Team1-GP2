@@ -1,5 +1,5 @@
-using AuthenticationService.Common.Exceptions;
-using AuthenticationService.Common.Shared;
+using FitnessApp.Shared.Exceptions;
+using FitnessApp.Shared.Models;
 using AuthenticationService.Domain.Contracts;
 using AuthenticationService.Domain.Entities;
 using MediatR;
@@ -34,7 +34,6 @@ namespace AuthenticationService.Features.Register
 
             var email = request.RegisterRequest.Email.Trim().ToLower();
 
-            // Check if the email exists in the database (even if soft-deleted)
             var existingUser = await _unitOfWork.Users.GetQueryable(ignoreQueryFilters: true)
                 .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 
@@ -43,10 +42,8 @@ namespace AuthenticationService.Features.Register
                 throw new DuplicateEmailException(email);
             }
 
-            // Hash the password
             var hashedPassword = _passwordHasher.HashPassword(request.RegisterRequest.Password);
 
-            // Create new User entity
             var user = new User
             {
                 Email = email,
@@ -56,11 +53,9 @@ namespace AuthenticationService.Features.Register
                 ProfileCompleted = false
             };
 
-            // Save to database via UnitOfWork
             await _unitOfWork.Users.AddAsync(user, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Cache registration profile details for life-cycle completion (30-minute sliding expiration)
             var cacheKey = $"reg-{user.Id}";
             var cachedData = new CachedRegistrationData(
                 request.RegisterRequest.FirstName,
@@ -74,7 +69,6 @@ namespace AuthenticationService.Features.Register
                 SlidingExpiration = TimeSpan.FromMinutes(30)
             });
 
-            // Return response dto
             return new RegisterDto
             {
                 UserId = user.Id,
