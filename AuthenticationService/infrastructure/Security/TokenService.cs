@@ -1,4 +1,4 @@
-using AuthenticationService.Common.Shared;
+using FitnessApp.Shared.Models;
 using AuthenticationService.Domain.Contracts;
 using AuthenticationService.Domain.Entities;
 using Microsoft.Extensions.Options;

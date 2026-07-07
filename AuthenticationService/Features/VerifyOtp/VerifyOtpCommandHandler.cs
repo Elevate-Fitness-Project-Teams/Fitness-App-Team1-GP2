@@ -1,4 +1,4 @@
-using AuthenticationService.Common.Exceptions;
+using FitnessApp.Shared.Exceptions;
 using AuthenticationService.Domain.Contracts;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +31,6 @@ namespace AuthenticationService.Features.VerifyOtp
             var email = request.VerifyOtpRequest.Email.Trim().ToLowerInvariant();
             var otp = request.VerifyOtpRequest.Otp;
 
-            // Retrieve the latest active OTP for the email
             var otpRecord = await _unitOfWork.OtpCodes.GetQueryable(ignoreQueryFilters: false)
                 .Where(o => o.Email == email && !o.IsUsed)
                 .OrderByDescending(o => o.CreatedAt)
@@ -42,15 +41,26 @@ namespace AuthenticationService.Features.VerifyOtp
                 throw new AppException("Invalid OTP.", System.Net.HttpStatusCode.BadRequest, "AUTH_INVALID_OTP");
             }
 
-            // Verify hash
+            if (otpRecord.FailedAttempts >= 3)
+            {
+                if (!otpRecord.IsUsed)
+                {
+                    otpRecord.IsUsed = true;
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                }
+                throw new AppException("Too many failed attempts. Please request a new OTP.", System.Net.HttpStatusCode.BadRequest, "AUTH_OTP_LOCKED");
+            }
+
             var verificationResult = _passwordHasher.VerifyPassword(otp, otpRecord.Code);
             
             if (!verificationResult.Verified)
             {
+                otpRecord.FailedAttempts++;
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
                 throw new AppException("Invalid OTP.", System.Net.HttpStatusCode.BadRequest, "AUTH_INVALID_OTP");
             }
 
-            // Check Expiration
             if (otpRecord.ExpiresAt < DateTime.UtcNow)
             {
                 throw new AppException("OTP has expired.", System.Net.HttpStatusCode.BadRequest, "AUTH_OTP_EXPIRED");
@@ -59,10 +69,8 @@ namespace AuthenticationService.Features.VerifyOtp
             otpRecord.IsUsed = true;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Generate reset token
             var resetToken = Guid.NewGuid().ToString("N");
 
-            // Cache
             var cacheOptions = new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)

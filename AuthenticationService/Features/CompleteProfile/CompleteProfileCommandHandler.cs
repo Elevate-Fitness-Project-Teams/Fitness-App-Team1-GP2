@@ -1,5 +1,5 @@
-using AuthenticationService.Common.Exceptions;
-using AuthenticationService.Common.Shared;
+using FitnessApp.Shared.Exceptions;
+using FitnessApp.Shared.Models;
 using AuthenticationService.Domain.Contracts;
 using AuthenticationService.Domain.Events;
 using MassTransit;

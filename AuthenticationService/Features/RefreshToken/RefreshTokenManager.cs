@@ -1,4 +1,4 @@
-using AuthenticationService.Common.Exceptions;
+using FitnessApp.Shared.Exceptions;
 using AuthenticationService.Domain.Contracts;
 using Microsoft.EntityFrameworkCore;
 using System;
