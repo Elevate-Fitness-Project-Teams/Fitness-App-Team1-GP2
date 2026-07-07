@@ -12,6 +12,7 @@ using AuthenticationService.Features.CompleteProfile;
 using AuthenticationService.Features.ForgotPassword;
 using AuthenticationService.Features.VerifyOtp;
 using AuthenticationService.Features.ResetPassword;
+using AuthenticationService.Features.ChangePassword;
 
 namespace AuthenticationService.Features
 {
@@ -128,6 +129,26 @@ namespace AuthenticationService.Features
             var result = await _mediator.Send(command, cancellationToken);
 
             var response = ApiResponse<ResetPasswordDto>.Success(result, "Password reset successfully.", 200);
+
+            return Ok(response);
+        }
+
+        [HttpPut("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                throw new AppException("Unauthorized access.", System.Net.HttpStatusCode.Unauthorized, "AUTH_UNAUTHORIZED");
+            }
+
+            var command = new ChangePasswordCommand(userId, request);
+            var result = await _mediator.Send(command, cancellationToken);
+
+            var response = ApiResponse<ChangePasswordDto>.Success(result, "Password changed successfully.", 200);
 
             return Ok(response);
         }
