@@ -1,10 +1,10 @@
 using FluentValidation;
 
-namespace FitnessApp.UserProfileService.Features.Queries.GetProfile
+namespace FitnessApp.UserProfileService.Features.Queries.GetSettings
 {
-    public class GetProfileQueryValidator : AbstractValidator<GetProfileQuery>
+    public class GetSettingsQueryValidator : AbstractValidator<GetSettingsQuery>
     {
-        public GetProfileQueryValidator()
+        public GetSettingsQueryValidator()
         {
             RuleFor(x => x.UserId)
                 .GreaterThan(0)

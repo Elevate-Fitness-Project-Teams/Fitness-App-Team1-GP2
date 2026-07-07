@@ -8,7 +8,8 @@ namespace FitnessApp.UserProfileService.Features.Commands.UpdateProfile
         {
             RuleFor(x => x.UserId)
                 .GreaterThan(0)
-                .WithErrorCode("AUTH_TOKEN_INVALID");
+                .WithErrorCode("VAL_REQUIRED_FIELD")
+                .WithMessage("Valid user identifier is required.");
 
             RuleFor(x => x.FirstName)
                 .NotEmpty()

@@ -2,6 +2,7 @@ using FitnessApp.Shared.Models;
 using FitnessApp.UserProfileService.Features.Queries.GetProfile;
 using FitnessApp.UserProfileService.Features.Commands.UpdateProfile;
 using FitnessApp.UserProfileService.Features.Commands.UploadProfilePicture;
+using FitnessApp.UserProfileService.Features.Queries.GetSettings;
 using Microsoft.AspNetCore.Http;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -85,6 +86,26 @@ namespace FitnessApp.UserProfileService.Features
 
             var command = new UploadProfilePictureCommand(userId, profilePicture);
             var result = await _mediator.Send(command);
+
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("settings")]
+        public async Task<IActionResult> GetSettings()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
+            {
+                var errorResponse = ApiResponse<string>.Failure(
+                    new List<string> { "AUTH_TOKEN_INVALID" },
+                    "Invalid or missing user authentication token.",
+                    401);
+                return StatusCode(401, errorResponse);
+            }
+
+            var query = new GetSettingsQuery(userId);
+            var result = await _mediator.Send(query);
 
             return StatusCode(result.StatusCode, result);
         }
