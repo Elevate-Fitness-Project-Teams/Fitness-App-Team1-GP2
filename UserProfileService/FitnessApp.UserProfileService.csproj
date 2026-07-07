@@ -29,7 +29,6 @@
     <Folder Include="Common\" />
     <Folder Include="Domain\Entities\" />
     <Folder Include="Domain\Contracts\" />
-    <Folder Include="Features\" />
     <Folder Include="Infrastructure\Persistence\Configurations\" />
     <Folder Include="Infrastructure\Persistence\Context\" />
     <Folder Include="Infrastructure\Persistence\Repositories\" />

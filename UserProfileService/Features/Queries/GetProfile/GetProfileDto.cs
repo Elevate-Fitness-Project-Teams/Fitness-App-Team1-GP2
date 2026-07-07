@@ -1,8 +1,8 @@
 using System;
 
-namespace UserProfileService.Domain.Entities
+namespace FitnessApp.UserProfileService.Features.Queries.GetProfile
 {
-    public class UserProfile
+    public class GetProfileDto
     {
         public int UserId { get; set; }
         public string FirstName { get; set; } = string.Empty;
@@ -12,11 +12,9 @@ namespace UserProfileService.Domain.Entities
         public string? ProfilePictureUrl { get; set; }
         public bool IsPremiumCached { get; set; }
         public DateTime MemberSince { get; set; }
-
-        // Navigation Properties
-        public UserPreferences? Preferences { get; set; }
-        public NotificationSettings? NotificationSettings { get; set; }
-        public PrivacySettings? PrivacySettings { get; set; }
-        public UserStatistics? Statistics { get; set; }
+        
+        // Statistics
+        public int TotalWorkouts { get; set; }
+        public int CurrentStreak { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace UserProfileService.Infrastructure.Persistence.Context
         public DbSet<UserPreferences> UserPreferences { get; set; }
         public DbSet<NotificationSettings> NotificationSettings { get; set; }
         public DbSet<PrivacySettings> PrivacySettings { get; set; }
+        public DbSet<UserStatistics> UserStatistics { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

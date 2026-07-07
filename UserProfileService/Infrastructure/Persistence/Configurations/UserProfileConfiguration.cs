@@ -60,6 +60,11 @@ namespace UserProfileService.Infrastructure.Persistence.Configurations
                 .WithOne(x => x.UserProfile)
                 .HasForeignKey<PrivacySettings>(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(x => x.Statistics)
+                .WithOne(x => x.UserProfile)
+                .HasForeignKey<UserStatistics>(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

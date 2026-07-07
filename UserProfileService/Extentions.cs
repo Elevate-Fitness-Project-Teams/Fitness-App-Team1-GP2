@@ -9,6 +9,7 @@ using UserProfileService.Domain.Contracts;
 using UserProfileService.Infrastructure.Persistence.Repositories;
 using FitnessApp.Shared.Extensions;
 using FluentValidation;
+using FitnessApp.Shared.Models;
 
 
 namespace UserProfileService
@@ -19,6 +20,8 @@ namespace UserProfileService
         public static IServiceCollection AddWebApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddControllers();
+
+            services.AddSharedJwtAuthentication(configuration);
 
             services.AddDbContext<UserProfileDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("UserProfileConnection")));
@@ -43,8 +46,6 @@ namespace UserProfileService
 
             return services;
         }
-
-      
 
 
     }

@@ -1,6 +1,7 @@
 using FitnessApp.Shared.Middlewares;
 using FitnessApp.Shared.Models;
 using FitnessApp.Shared.Behaviors;
+using FitnessApp.Shared.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +24,7 @@ namespace AuthenticationService
         {
             services.AddControllers();
 
-            services.ConfigureJWT(configuration);
+            services.AddSharedJwtAuthentication(configuration);
 
             services.AddDbContext<AuthDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("AuthenticationConnection")));
@@ -66,29 +67,7 @@ namespace AuthenticationService
             return services;
         }
 
-        private static void ConfigureJWT(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.Configure<JWTOptions>(configuration.GetSection("JWTOptions"));
-            var jwt = configuration.GetSection("JWTOptions").Get<JWTOptions>();
-            services.AddAuthentication(config =>
-            {
-                config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(config =>
-            {
-                config.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = jwt.Issuer,
-                    ValidateAudience = true,
-                    ValidAudience = jwt.Audience,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SecretKey)),
-                };
-            });
 
-        }
 
 
     }
