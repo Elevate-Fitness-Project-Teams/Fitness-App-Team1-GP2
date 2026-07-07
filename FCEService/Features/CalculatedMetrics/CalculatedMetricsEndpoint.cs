@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FCEService.Features.CalculatedMetrics
 {
-    [Route("/api/v1/fitness/calculate")]
+    [Route("api/v1/fitness/calculate")]
     [ApiController]
     public class CalculatedMetricsEndpoint(IMediator mediator) : ControllerBase
     {
