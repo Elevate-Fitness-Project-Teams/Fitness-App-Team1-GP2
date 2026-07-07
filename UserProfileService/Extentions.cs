@@ -7,6 +7,8 @@ using System.Text;
 using UserProfileService.Infrastructure.Persistence.Context;
 using UserProfileService.Domain.Contracts;
 using UserProfileService.Infrastructure.Persistence.Repositories;
+using FitnessApp.UserProfileService.Domain.Contracts;
+using FitnessApp.UserProfileService.Infrastructure.Services;
 using FitnessApp.Shared.Extensions;
 using FluentValidation;
 using FitnessApp.Shared.Models;
@@ -37,6 +39,7 @@ namespace UserProfileService
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+            services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
             services.AddSharedSwagger();
 
