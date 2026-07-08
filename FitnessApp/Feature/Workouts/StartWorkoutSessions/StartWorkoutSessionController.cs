@@ -9,7 +9,7 @@ namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
 {
     [ApiController]
     [Route("api/v1/workouts")]
-   // [Authorize]
+    [Authorize]
     public class StartWorkoutSessionController(
         IValidator<StartWorkoutSessionCommand> validator,
         IMediator mediator) : ControllerBase
@@ -21,10 +21,10 @@ namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
             CancellationToken cancellationToken)
         {
 
-            var userIdValue = "10";
-           //User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-           //?? User.FindFirst("sub")?.Value
-           //?? User.FindFirst("userId")?.Value;
+            var userIdValue = 
+           User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+           ?? User.FindFirst("sub")?.Value
+           ?? User.FindFirst("userId")?.Value;
 
             if (!int.TryParse(userIdValue, out var userId))
             {
