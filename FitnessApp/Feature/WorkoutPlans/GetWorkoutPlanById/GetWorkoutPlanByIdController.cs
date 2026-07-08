@@ -2,21 +2,22 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WorkoutService.Common;
-using WorkoutService.Features.Workouts.BrowseWorkouts;
 
-namespace WorkoutService.Feature.Workouts.BrowseWorkouts;
+namespace WorkoutService.Feature.WorkoutPlans.GetWorkoutPlanById;
 
 [ApiController]
-[Route("api/v1/workouts")]
-public class BrowseWorkoutsController(
+[Route("api/v1/workout-plans")]
+public sealed class GetWorkoutPlanByIdController(
     IMediator mediator,
-    IValidator<BrowseWorkoutsQuery> validator) : ControllerBase
+    IValidator<GetWorkoutPlanByIdQuery> validator) : ControllerBase
 {
-    [HttpGet]
-    public async Task<IActionResult> BrowseWorkouts(
-        [FromQuery] BrowseWorkoutsQuery request,
+    [HttpGet("{planId}")]
+    public async Task<IActionResult> GetWorkoutPlanById(
+        [FromRoute] string planId,
         CancellationToken cancellationToken)
     {
+        var request = new GetWorkoutPlanByIdQuery(planId);
+
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
@@ -24,7 +25,9 @@ public class BrowseWorkoutsController(
             var errors = validationResult.Errors
                 .Select(x => x.ErrorMessage)
                 .ToList();
-            var response = ApiResponse<PagedResult<BrowseWorkoutsResponse>>.Failure(ErrorCode.ValidationError, errors);
+
+            var response = ApiResponse<GetWorkoutPlanByIdResponse>
+                .Failure(ErrorCode.ValidationError, errors);
 
             return BadRequest(response);
         }
@@ -33,13 +36,13 @@ public class BrowseWorkoutsController(
 
         if (!result.IsSuccess)
         {
-            var response = ApiResponse<PagedResult<BrowseWorkoutsResponse>>
+            var response = ApiResponse<GetWorkoutPlanByIdResponse>
                 .Failure(result.ErrorCode);
 
             return StatusCode(response.StatusCode, response);
         }
 
-        var successResponse = ApiResponse<PagedResult<BrowseWorkoutsResponse>>
+        var successResponse = ApiResponse<GetWorkoutPlanByIdResponse>
             .Success(result.Data);
 
         return Ok(successResponse);

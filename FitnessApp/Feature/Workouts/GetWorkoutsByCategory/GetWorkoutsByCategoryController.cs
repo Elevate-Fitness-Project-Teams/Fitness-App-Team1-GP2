@@ -2,21 +2,22 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WorkoutService.Common;
-using WorkoutService.Features.Workouts.BrowseWorkouts;
 
-namespace WorkoutService.Feature.Workouts.BrowseWorkouts;
+namespace WorkoutService.Feature.Workouts.GetWorkoutsByCategory;
 
 [ApiController]
 [Route("api/v1/workouts")]
-public class BrowseWorkoutsController(
+public sealed class GetWorkoutsByCategoryController(
     IMediator mediator,
-    IValidator<BrowseWorkoutsQuery> validator) : ControllerBase
+    IValidator<GetWorkoutsByCategoryQuery> validator) : ControllerBase
 {
-    [HttpGet]
-    public async Task<IActionResult> BrowseWorkouts(
-        [FromQuery] BrowseWorkoutsQuery request,
+    [HttpGet("category/{categoryName}")]
+    public async Task<IActionResult> GetWorkoutsByCategory(
+        [FromRoute] string categoryName,
         CancellationToken cancellationToken)
     {
+        var request = new GetWorkoutsByCategoryQuery(categoryName);
+
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
@@ -24,7 +25,9 @@ public class BrowseWorkoutsController(
             var errors = validationResult.Errors
                 .Select(x => x.ErrorMessage)
                 .ToList();
-            var response = ApiResponse<PagedResult<BrowseWorkoutsResponse>>.Failure(ErrorCode.ValidationError, errors);
+
+            var response = ApiResponse<List<GetWorkoutsByCategoryResponse>>
+                .Failure(ErrorCode.ValidationError, errors);
 
             return BadRequest(response);
         }
@@ -33,13 +36,13 @@ public class BrowseWorkoutsController(
 
         if (!result.IsSuccess)
         {
-            var response = ApiResponse<PagedResult<BrowseWorkoutsResponse>>
+            var response = ApiResponse<List<GetWorkoutsByCategoryResponse>>
                 .Failure(result.ErrorCode);
 
             return StatusCode(response.StatusCode, response);
         }
 
-        var successResponse = ApiResponse<PagedResult<BrowseWorkoutsResponse>>
+        var successResponse = ApiResponse<List<GetWorkoutsByCategoryResponse>>
             .Success(result.Data);
 
         return Ok(successResponse);

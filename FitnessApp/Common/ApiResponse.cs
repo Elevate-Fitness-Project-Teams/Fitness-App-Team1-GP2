@@ -23,17 +23,19 @@
                 Timestamp: DateTime.UtcNow
             );
         }
-        public static ApiResponse<T> Failure(ErrorCode error)
+        public static ApiResponse<T> Failure(
+            ErrorCode error,
+            List<string>? errors = null)
         {
             var statusCode = GetStatusCode(error);
 
             return new ApiResponse<T>(
-                IsSuccess: false,
-                Message: GetMessage(error),
-                Data: default,
-                Errors: new List<string> { error.ToString() },
-                StatusCode: statusCode,
-                Timestamp: DateTime.UtcNow
+                false,
+                GetMessage(error),
+                default,
+                errors ?? new List<string> { error.ToString() },
+                statusCode,
+                DateTime.UtcNow
             );
         }
 

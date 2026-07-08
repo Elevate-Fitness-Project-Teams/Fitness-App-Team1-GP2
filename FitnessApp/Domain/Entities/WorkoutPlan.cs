@@ -2,7 +2,7 @@
 
 namespace WorkoutService.Domain.Entities
 {
-    public class WorkoutPlan
+    public class WorkoutPlan 
     {
         public string PlanId { get; set; } = string.Empty;
 

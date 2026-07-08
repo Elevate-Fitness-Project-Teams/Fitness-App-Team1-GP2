@@ -1,6 +1,9 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using WorkoutService.Contracts;
 using WorkoutService.Database;
+using WorkoutService.Messaging;
+using WorkoutService.Persistence;
 
 namespace FitnessApp
 {
@@ -17,9 +20,18 @@ namespace FitnessApp
 
             builder.Services.AddDbContext<WorkoutDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
             builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+
+            builder.Services.Configure<RabbitMqOptions>(
+            builder.Configuration.GetSection("RabbitMQ"));
+
+            builder.Services.AddScoped<IEventBus, RabbitMqEventBus>();
+
+            builder.Services.AddMemoryCache();
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -33,6 +45,7 @@ namespace FitnessApp
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
