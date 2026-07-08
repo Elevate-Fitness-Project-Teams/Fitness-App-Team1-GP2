@@ -1,15 +1,20 @@
-﻿using Azure;
-using MediatR;
+﻿using MediatR;
+using Microsoft.Extensions.Caching.Memory;
 using WorkoutService.Common;
 using WorkoutService.Contracts;
 using WorkoutService.Domain.Entities;
 
 namespace WorkoutService.Feature.Workouts.GetWorkoutDetails
 {
-    public class GetWorkoutDetailsHandler(IUnitOfWork _unitOfWork) : IRequestHandler<GetWorkoutDetailsQuery, RequestResult<GetWorkoutDetailsResponse>>
+    public class GetWorkoutDetailsHandler(IUnitOfWork _unitOfWork,IMemoryCache memoryCache) : IRequestHandler<GetWorkoutDetailsQuery, RequestResult<GetWorkoutDetailsResponse>>
     {
         public async Task<RequestResult<GetWorkoutDetailsResponse>> Handle(GetWorkoutDetailsQuery request, CancellationToken cancellationToken)
         {
+            var cacheKey = $"WorkoutDetails_{request.workoutId}";
+            if(memoryCache.TryGetValue(cacheKey, out GetWorkoutDetailsResponse? cachedWorkout))
+            {
+                return RequestResult<GetWorkoutDetailsResponse>.Success(cachedWorkout!);
+            }
             var workout = _unitOfWork.GetRepository<Workout>()
             .GetAll()
             .Where(w => w.WorkoutId == request.workoutId)
@@ -41,10 +46,14 @@ namespace WorkoutService.Feature.Workouts.GetWorkoutDetails
                         OrderIndex = we.OrderIndex
                     }).ToList()
             }).FirstOrDefault();
+
+
             if (workout is null)
             {
                 return RequestResult<GetWorkoutDetailsResponse>.Failure(ErrorCode.WorkoutNotFound);
             }
+
+            memoryCache.Set(cacheKey, workout, TimeSpan.FromMinutes(10));
 
             return RequestResult<GetWorkoutDetailsResponse>.Success(workout);
 

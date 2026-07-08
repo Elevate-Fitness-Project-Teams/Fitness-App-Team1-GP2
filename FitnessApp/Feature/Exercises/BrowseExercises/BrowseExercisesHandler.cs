@@ -1,22 +1,39 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using WorkoutService.Common;
 using WorkoutService.Contracts;
 using WorkoutService.Domain.Entities;
 
 namespace WorkoutService.Feature.Exercises.BrowseExercises;
 
-public sealed class BrowseExercisesHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<BrowseExercisesQuery, RequestResult<List<BrowseExercisesResponse>>>
+public sealed class BrowseExercisesHandler(
+    IUnitOfWork unitOfWork,
+    IMemoryCache memoryCache)
+    : IRequestHandler<BrowseExercisesQuery, RequestResult<PagedResult<BrowseExercisesResponse>>>
 {
-    public async Task<RequestResult<List<BrowseExercisesResponse>>> Handle(
+    public async Task<RequestResult<PagedResult<BrowseExercisesResponse>>> Handle(
         BrowseExercisesQuery request,
         CancellationToken cancellationToken)
     {
-        var exercises = await unitOfWork
+        var cacheKey = $"exercises:page={request.Page}:pageSize={request.PageSize}";
+
+        if (memoryCache.TryGetValue(cacheKey, out PagedResult<BrowseExercisesResponse>? cachedExercises))
+        {
+            return RequestResult<PagedResult<BrowseExercisesResponse>>
+                .Success(cachedExercises!);
+        }
+
+        var query = unitOfWork
             .GetRepository<Exercise>()
-            .GetAll()
+            .GetAll();
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var exercises = await query
             .OrderBy(x => x.ExerciseId)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(x => new BrowseExercisesResponse
             {
                 ExerciseId = x.ExerciseId,
@@ -29,7 +46,17 @@ public sealed class BrowseExercisesHandler(IUnitOfWork unitOfWork)
             })
             .ToListAsync(cancellationToken);
 
-        return RequestResult<List<BrowseExercisesResponse>>
-            .Success(exercises);
+        var pagedResult = new PagedResult<BrowseExercisesResponse>
+        {
+            Items = exercises,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalCount = totalCount
+        };
+
+        memoryCache.Set(cacheKey, pagedResult, TimeSpan.FromMinutes(10));
+
+        return RequestResult<PagedResult<BrowseExercisesResponse>>
+            .Success(pagedResult);
     }
 }
