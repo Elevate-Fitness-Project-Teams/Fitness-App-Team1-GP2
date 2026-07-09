@@ -76,9 +76,9 @@ public sealed class NotificationsController(
     {
         
         var userIdValue =/*"10";*/
-         User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-        ?? User.FindFirst("sub")?.Value
-        ?? User.FindFirst("userId")?.Value;
+        User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+       ?? User.FindFirst("sub")?.Value
+       ?? User.FindFirst("userId")?.Value;
 
         if (!int.TryParse(userIdValue, out var userId))
         {
