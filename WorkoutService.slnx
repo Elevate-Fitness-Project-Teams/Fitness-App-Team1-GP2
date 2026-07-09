@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FitnessApp/WorkoutService.csproj" />
+  <Project Path="NotificationService/NotificationService.csproj" Id="8e720e4f-fcd5-4325-931c-20f092f13420" />
+</Solution>
