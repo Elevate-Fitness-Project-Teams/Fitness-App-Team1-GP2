@@ -7,6 +7,5 @@ namespace FitnessApp.UserProfileService.Features.Commands.UpdateProfile
         int UserId,
         string FirstName,
         string LastName,
-        string Email,
         string PhoneNumber) : IRequest<ApiResponse<string>>;
 }

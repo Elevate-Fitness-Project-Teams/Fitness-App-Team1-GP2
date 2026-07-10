@@ -21,11 +21,6 @@ namespace FitnessApp.UserProfileService.Features.Commands.UpdateProfile
                 .WithErrorCode("VAL_REQUIRED_FIELD")
                 .MaximumLength(50);
 
-            RuleFor(x => x.Email)
-                .NotEmpty()
-                .WithErrorCode("VAL_REQUIRED_FIELD")
-                .EmailAddress()
-                .MaximumLength(255);
 
             RuleFor(x => x.PhoneNumber)
                 .NotEmpty()

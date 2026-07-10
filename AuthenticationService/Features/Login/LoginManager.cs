@@ -30,7 +30,7 @@ namespace AuthenticationService.Features.Login
                 throw new AppException("Invalid email or password.", HttpStatusCode.Unauthorized, "AUTH_INVALID_CREDENTIALS");
             }
 
-            if (user.isLockedOut && user.LockedUntil.HasValue)
+            if (user.IsLockedOut && user.LockedUntil.HasValue)
             {
                 if (user.LockedUntil.Value > DateTime.UtcNow)
                 {
@@ -42,7 +42,7 @@ namespace AuthenticationService.Features.Login
                 }
                 else
                 {
-                    user.isLockedOut = false;
+                    user.IsLockedOut = false;
                     user.LockedUntil = null;
                     await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -70,7 +70,7 @@ namespace AuthenticationService.Features.Login
 
             if (failedCount >= 5)
             {
-                user.isLockedOut = true;
+                user.IsLockedOut = true;
                 user.LockedUntil = DateTime.UtcNow.AddMinutes(15);
                 await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -87,9 +87,9 @@ namespace AuthenticationService.Features.Login
 
         public async Task HandleSuccessfulLoginAsync(User user, string email, string ipAddress, string? newHash, CancellationToken cancellationToken)
         {
-            if (user.isLockedOut || user.LockedUntil.HasValue)
+            if (user.IsLockedOut || user.LockedUntil.HasValue)
             {
-                user.isLockedOut = false;
+                user.IsLockedOut = false;
                 user.LockedUntil = null;
             }
 

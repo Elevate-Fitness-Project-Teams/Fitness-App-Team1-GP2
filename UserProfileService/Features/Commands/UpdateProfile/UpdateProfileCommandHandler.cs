@@ -27,18 +27,6 @@ namespace FitnessApp.UserProfileService.Features.Commands.UpdateProfile
                     401);
             }
 
-            var emailExists = await _unitOfWork.UserProfiles
-                .GetQueryable(asNoTracking: true)
-                .AnyAsync(x => x.Email == request.Email && x.UserId != request.UserId, cancellationToken);
-
-            if (emailExists)
-            {
-                return ApiResponse<string>.Failure(
-                    new List<string> { "AUTH_EMAIL_EXISTS" },
-                    "The provided email is already in use by another account.",
-                    409);
-            }
-
             var profile = await _unitOfWork.UserProfiles.GetByIdAsync(request.UserId, cancellationToken);
 
             if (profile == null)
@@ -51,7 +39,6 @@ namespace FitnessApp.UserProfileService.Features.Commands.UpdateProfile
 
             profile.FirstName = request.FirstName;
             profile.LastName = request.LastName;
-            profile.Email = request.Email;
             profile.PhoneNumber = request.PhoneNumber;
 
             await _unitOfWork.UserProfiles.UpdateAsync(profile, cancellationToken);
