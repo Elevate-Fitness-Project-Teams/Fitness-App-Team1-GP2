@@ -28,7 +28,7 @@ namespace UserProfileService.Features.Consumers
                 PhoneNumber = message.PhoneNumber
             };
 
-            await _mediator.Send(command);
+            await _mediator.Send(command, context.CancellationToken);
         }
     }
 }

@@ -35,10 +35,10 @@ namespace AuthenticationService.Features.Register
 
             var email = request.RegisterRequest.Email.Trim().ToLower();
 
-            var existingUser = await _unitOfWork.Users.GetQueryable(ignoreQueryFilters: true)
-                .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+            var userExists = await _unitOfWork.Users.GetQueryable(ignoreQueryFilters: true)
+                .AnyAsync(u => u.Email == email, cancellationToken);
 
-            if (existingUser != null)
+            if (userExists)
             {
                 throw new DuplicateEmailException(email);
             }
@@ -49,9 +49,9 @@ namespace AuthenticationService.Features.Register
             {
                 Email = email,
                 PasswordHash = hashedPassword,
-                isLockedOut = false,
+                IsLockedOut = false,
                 CreatedAt = DateTime.UtcNow,
-                ProfileCompleted = true
+                ProfileCompleted = false
             };
 
             await _unitOfWork.Users.AddAsync(user, cancellationToken);

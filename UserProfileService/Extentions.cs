@@ -12,6 +12,7 @@ using FitnessApp.UserProfileService.Infrastructure.Services;
 using FitnessApp.Shared.Extensions;
 using FluentValidation;
 using FitnessApp.Shared.Models;
+using MassTransit;
 
 
 namespace UserProfileService
@@ -34,6 +35,21 @@ namespace UserProfileService
             {
                 cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
                 cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            });
+
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<UserProfileService.Features.Consumers.UserRegisteredConsumer>();
+
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("localhost", "/", h => {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+
+                    cfg.ConfigureEndpoints(context);
+                });
             });
 
 

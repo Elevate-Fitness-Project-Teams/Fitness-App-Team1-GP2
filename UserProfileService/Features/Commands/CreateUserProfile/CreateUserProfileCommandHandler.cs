@@ -18,6 +18,12 @@ namespace UserProfileService.Features.Commands.CreateUserProfile
 
         public async Task<int> Handle(CreateUserProfileCommand request, CancellationToken cancellationToken)
         {
+            var existingProfile = await _unitOfWork.UserProfiles.GetByIdAsync(request.UserId, cancellationToken);
+            if (existingProfile != null)
+            {
+                return existingProfile.UserId;
+            }
+
             var userProfile = new UserProfile
             {
                 UserId = request.UserId,

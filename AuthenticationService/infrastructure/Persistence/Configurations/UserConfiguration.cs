@@ -26,7 +26,7 @@ namespace AuthenticationService.infrastructure.Persistence.Configurations
                 .HasMaxLength(512)
                 .IsRequired();
 
-            builder.Property(x => x.isLockedOut)
+            builder.Property(x => x.IsLockedOut)
                 .HasDefaultValue(false);
 
             builder.Property(x => x.LockedUntil)
