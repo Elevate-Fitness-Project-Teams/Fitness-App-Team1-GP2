@@ -61,8 +61,7 @@ namespace FitnessApp.UserProfileService.Features
             var command = new UpdateProfileCommand(
                 userId, 
                 requestDto.FirstName, 
-                requestDto.LastName, 
-                requestDto.Email, 
+                requestDto.LastName,  
                 requestDto.PhoneNumber);
 
             var result = await _mediator.Send(command);
