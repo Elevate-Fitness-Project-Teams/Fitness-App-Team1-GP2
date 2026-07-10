@@ -4,7 +4,8 @@ using AuthenticationService.Domain.Contracts;
 using AuthenticationService.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using FitnessApp.Shared.Events;
+using MassTransit;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,16 +16,16 @@ namespace AuthenticationService.Features.Register
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
-        private readonly IMemoryCache _cache;
+        private readonly IPublishEndpoint _publishEndpoint;
 
         public RegisterCommandHandler(
             IUnitOfWork unitOfWork, 
             IPasswordHasher passwordHasher,
-            IMemoryCache cache)
+            IPublishEndpoint publishEndpoint)
         {
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
-            _cache = cache;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<RegisterDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -50,29 +51,25 @@ namespace AuthenticationService.Features.Register
                 PasswordHash = hashedPassword,
                 isLockedOut = false,
                 CreatedAt = DateTime.UtcNow,
-                ProfileCompleted = false
+                ProfileCompleted = true
             };
 
             await _unitOfWork.Users.AddAsync(user, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var cacheKey = $"reg-{user.Id}";
-            var cachedData = new CachedRegistrationData(
+            var userRegisteredEvent = new UserRegisteredEvent(
+                user.Id,
                 request.RegisterRequest.FirstName,
                 request.RegisterRequest.LastName,
                 email,
                 request.RegisterRequest.PhoneNumber
             );
-            
-            _cache.Set(cacheKey, cachedData, new MemoryCacheEntryOptions
-            {
-                SlidingExpiration = TimeSpan.FromMinutes(30)
-            });
+
+            await _publishEndpoint.Publish(userRegisteredEvent, cancellationToken);
 
             return new RegisterDto
             {
-                UserId = user.Id,
-                RequiresProfileCompletion = true
+                UserId = user.Id
             };
         }
     }

@@ -8,7 +8,6 @@ using AuthenticationService.Features.Register;
 using AuthenticationService.Features.Login;
 using AuthenticationService.Features.Logout;
 using AuthenticationService.Features.RefreshToken;
-using AuthenticationService.Features.CompleteProfile;
 using AuthenticationService.Features.ForgotPassword;
 using AuthenticationService.Features.VerifyOtp;
 using AuthenticationService.Features.ResetPassword;
@@ -33,30 +32,12 @@ namespace AuthenticationService.Features
             var command = new RegisterCommand(request);
             var result = await _mediator.Send(command, cancellationToken);
 
-            var response = ApiResponse<RegisterDto>.Success(result, "Registration successful. Please complete your profile.", 201);
+            var response = ApiResponse<RegisterDto>.Success(result, "Registration successful.", 201);
 
             return Created(string.Empty, response);
         }
 
-        [HttpPost("complete-profile")]
-        [Authorize]
-        public async Task<IActionResult> CompleteProfile(CancellationToken cancellationToken)
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst("sub")?.Value;
 
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
-            {
-                throw new AppException("Unauthorized access.", System.Net.HttpStatusCode.Unauthorized, "AUTH_UNAUTHORIZED");
-            }
-
-            var command = new CompleteProfileCommand(userId);
-            await _mediator.Send(command, cancellationToken);
-
-            var response = ApiResponse<object?>.Success(null, "Profile lifecycle initiated.", 200);
-
-            return Ok(response);
-        }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
