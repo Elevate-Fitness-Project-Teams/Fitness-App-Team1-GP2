@@ -24,10 +24,14 @@ public class ViewWeightQueryHandler(AppDbContext appDbContext) : IRequestHandler
                 Notes = x.Notes
             });
         
-        if (!weightHistory.Any())
-            return ResponseResult<PaginatedResult<ViewWeightHistoryDto>>.Failure(StatusCode.NotFound, "No weight history records were found for this user.");
-        
         var pagedResult = await weightHistory.ToPaginatedListAsync(request.PageNumber, request.PageSize, cancellationToken);
+        
+        if (pagedResult.TotalCount == 0)
+        {
+            return ResponseResult<PaginatedResult<ViewWeightHistoryDto>>.Failure(
+                StatusCode.NotFound, 
+                "No weight history records were found for this user.");
+        }
         
         return ResponseResult<PaginatedResult<ViewWeightHistoryDto>>.Success(pagedResult, "Weight history retrieved successfully.", StatusCode.Success);
     }
