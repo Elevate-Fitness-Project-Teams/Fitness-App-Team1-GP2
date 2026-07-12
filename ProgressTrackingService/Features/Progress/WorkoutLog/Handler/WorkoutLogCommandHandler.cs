@@ -43,8 +43,6 @@ public class WorkoutLogCommandHandler (
             // Step 7: Check Achievements - Step 8: Insert UserAchievements
             var achievementResult = await _achievementService.CheckAndUnlockAchievements(transaction, request.UserId, cancellationToken);
             
-            await transaction.CommitAsync(cancellationToken);
-            
             // Step 9: Publish WorkoutLogged
             await _publishEndpoint.Publish(new WorkoutLoggedEvent
             {
@@ -65,6 +63,8 @@ public class WorkoutLogCommandHandler (
                     EarnedAt = DateTimeOffset.UtcNow
                 }, cancellationToken);
             }
+            
+            await transaction.CommitAsync(cancellationToken);
             
             return ResponseResult<WorkoutLogDto>.Success(new WorkoutLogDto()
             {
