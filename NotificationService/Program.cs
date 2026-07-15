@@ -43,7 +43,10 @@ namespace NotificationService
                 });
             }
 
-            app.UseHttpsRedirection();
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
 
             app.UseAuthorization();
 

@@ -20,10 +20,10 @@ public sealed class NotificationsController(
     [HttpGet]
     public async Task<IActionResult> GetNotifications(CancellationToken cancellationToken)
     {
-        var userIdValue =/*"10";*/
-        User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-        ?? User.FindFirst("sub")?.Value
-        ?? User.FindFirst("userId")?.Value;
+        var userIdValue = "10";
+        //User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+        //?? User.FindFirst("sub")?.Value
+        //?? User.FindFirst("userId")?.Value;
 
         if (!int.TryParse(userIdValue, out var userId))
         {
