@@ -7,5 +7,6 @@
   <Project Path="FitnessApp.Shared/FitnessApp.Shared.csproj" Id="67d5c03a-64a1-42fa-9ba5-0f0cc87092ab" />
   <Project Path="FitnessApp/WorkoutService.csproj" />
   <Project Path="NotificationService/NotificationService.csproj" />
+  <Project Path="ProgressTrackingService/ProgressTrackingService.csproj" />
   <Project Path="UserProfileService/FitnessApp.UserProfileService.csproj" Id="f1512792-ac4a-45e7-b193-0e34a83d7461" />
 </Solution>
