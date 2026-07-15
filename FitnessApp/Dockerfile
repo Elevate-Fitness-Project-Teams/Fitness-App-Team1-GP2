@@ -1,3 +1,4 @@
+# Base image (Runtime)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 
 USER $APP_UID
@@ -8,36 +9,52 @@ EXPOSE 8080
 EXPOSE 8081
 
 
+# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
 ARG BUILD_CONFIGURATION=Release
 
 WORKDIR /src
 
-COPY ["WorkoutService/WorkoutService.csproj", "WorkoutService/"]
 
-RUN dotnet restore "./WorkoutService/WorkoutService.csproj"
+# Copy project file first (for Docker cache)
+COPY ["FitnessApp.csproj", "./"]
 
+# Restore NuGet packages
+RUN dotnet restore "./FitnessApp.csproj"
+
+
+# Copy the rest of the source code
 COPY . .
 
-WORKDIR "/src/WorkoutService"
 
-RUN dotnet build "./WorkoutService.csproj" -c $BUILD_CONFIGURATION -o /app/build
+# Build application
+RUN dotnet build "./FitnessApp.csproj" \
+    -c $BUILD_CONFIGURATION \
+    -o /app/build
 
 
-
+# Publish stage
 FROM build AS publish
 
 ARG BUILD_CONFIGURATION=Release
 
-RUN dotnet publish "./WorkoutService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./FitnessApp.csproj" \
+    -c $BUILD_CONFIGURATION \
+    -o /app/publish \
+    /p:UseAppHost=false
 
 
 
+# Final runtime image
 FROM base AS final
 
 WORKDIR /app
 
+
+# Copy published files from publish stage
 COPY --from=publish /app/publish .
 
-ENTRYPOINT ["dotnet", "WorkoutService.dll"]
+
+# Start application
+ENTRYPOINT ["dotnet", "FitnessApp.dll"]
