@@ -1,5 +1,6 @@
 
 using FluentValidation;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Application.Notifications.GetNotifications;
 using NotificationService.Domain.Notifications;
@@ -29,8 +30,37 @@ namespace NotificationService
             builder.Services.AddValidatorsFromAssembly(typeof(GetNotificationsValidator).Assembly);
             builder.Services.Configure<RabbitMqOptions>(
                builder.Configuration.GetSection("RabbitMQ"));
+            builder.Services.AddMassTransit(x =>
+            {
+                x.AddConsumer<AchievementEarnedConsumer>();
 
-            builder.Services.AddHostedService<AchievementEarnedConsumer>();
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    var rabbitSection =
+                        builder.Configuration.GetSection("RabbitMQ");
+
+
+                    cfg.Host(
+                        rabbitSection["HostName"],
+                        "/",
+                        h =>
+                        {
+                            h.Username(
+                                rabbitSection["UserName"] ?? "guest");
+
+                            h.Password(
+                                rabbitSection["Password"] ?? "guest");
+                        });
+
+
+                    cfg.ReceiveEndpoint(
+                        "notification.achievement-earned",
+                        e =>
+                        {
+                            e.ConfigureConsumer<AchievementEarnedConsumer>(context);
+                        });
+                });
+            });
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

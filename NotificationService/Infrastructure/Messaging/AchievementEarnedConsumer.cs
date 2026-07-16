@@ -1,129 +1,51 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using MassTransit;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using NotificationService.Domain.Notifications;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 
 namespace NotificationService.Infrastructure.Messaging;
 
 public sealed class AchievementEarnedConsumer(
-    IServiceScopeFactory scopeFactory,
-    IOptions<RabbitMqOptions> options,
+    INotificationRepository notificationRepository,
     IMemoryCache memoryCache,
     ILogger<AchievementEarnedConsumer> logger)
-    : BackgroundService
+    : IConsumer<AchievementEarnedEvent>
 {
-    private readonly RabbitMqOptions _options = options.Value;
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task Consume(
+        ConsumeContext<AchievementEarnedEvent> context)
     {
-        var factory = new ConnectionFactory
+        try
         {
-            HostName = _options.HostName,
-            Port = _options.Port,
-            UserName = _options.UserName,
-            Password = _options.Password
-        };
+            var integrationEvent = context.Message;
 
-        await using var connection =
-            await factory.CreateConnectionAsync(stoppingToken);
+            var notification = new InAppNotification(
+                integrationEvent.UserId,
+                "Achievement unlocked!",
+                $"{integrationEvent.AchievementName}: {integrationEvent.Description}",
+                NotificationType.AchievementAlert);
 
-        await using var channel =
-            await connection.CreateChannelAsync(cancellationToken: stoppingToken);
+            await notificationRepository.AddAsync(
+                notification,
+                context.CancellationToken);
 
-        await channel.ExchangeDeclareAsync(
-            exchange: _options.ExchangeName,
-            type: ExchangeType.Topic,
-            durable: true,
-            autoDelete: false,
-            arguments: null,
-            cancellationToken: stoppingToken);
+            await notificationRepository.SaveChangesAsync(
+                context.CancellationToken);
 
-        await channel.QueueDeclareAsync(
-            queue: _options.QueueName,
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null,
-            cancellationToken: stoppingToken);
 
-        await channel.QueueBindAsync(
-            queue: _options.QueueName,
-            exchange: _options.ExchangeName,
-            routingKey: _options.RoutingKey,
-            arguments: null,
-            cancellationToken: stoppingToken);
+            memoryCache.Remove(
+                $"UserNotifications_{integrationEvent.UserId}");
 
-        var consumer = new AsyncEventingBasicConsumer(channel);
 
-        consumer.ReceivedAsync += async (_, eventArgs) =>
+            logger.LogInformation(
+                "Achievement notification created for user {UserId}",
+                integrationEvent.UserId);
+        }
+        catch (Exception ex)
         {
-            try
-            {
-                var json = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
+            logger.LogError(
+                ex,
+                "Error while consuming AchievementEarnedEvent");
 
-                var integrationEvent =
-                    JsonSerializer.Deserialize<AchievementEarnedIntegrationEvent>(
-                        json,
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        });
-
-                if (integrationEvent is null)
-                {
-                    await channel.BasicNackAsync(
-                        eventArgs.DeliveryTag,
-                        multiple: false,
-                        requeue: false,
-                        cancellationToken: stoppingToken);
-
-                    return;
-                }
-
-                using var scope = scopeFactory.CreateScope();
-
-                var notificationRepository =
-                    scope.ServiceProvider.GetRequiredService<INotificationRepository>();
-
-                var notification = new InAppNotification(
-                    integrationEvent.UserId,
-                    "Achievement unlocked!",
-                    $"{integrationEvent.AchievementName}: {integrationEvent.Description}",
-                    NotificationType.AchievementAlert);
-
-                await notificationRepository.AddAsync(notification, stoppingToken);
-                await notificationRepository.SaveChangesAsync(stoppingToken);
-
-                memoryCache.Remove($"UserNotifications_{integrationEvent.UserId}");
-
-                await channel.BasicAckAsync(
-                    eventArgs.DeliveryTag,
-                    multiple: false,
-                    cancellationToken: stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while consuming achievement_earned event.");
-
-                await channel.BasicNackAsync(
-                    eventArgs.DeliveryTag,
-                    multiple: false,
-                    requeue: true,
-                    cancellationToken: stoppingToken);
-            }
-        };
-
-        await channel.BasicConsumeAsync(
-            queue: _options.QueueName,
-            autoAck: false,
-            consumer: consumer,
-            cancellationToken: stoppingToken);
-
-        logger.LogInformation("AchievementEarnedConsumer started.");
-
-        await Task.Delay(Timeout.Infinite, stoppingToken);
+            throw;
+        }
     }
 }
