@@ -41,6 +41,12 @@ namespace AuthenticationService
             services.AddMemoryCache();
             services.AddMassTransit(x =>
             {
+                x.AddEntityFrameworkOutbox<AuthDbContext>(o =>
+                {
+                    o.UseSqlServer();
+                    o.UseBusOutbox();
+                });
+
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host(configuration["RabbitMQ:Host"] ?? "localhost", "/", h => {

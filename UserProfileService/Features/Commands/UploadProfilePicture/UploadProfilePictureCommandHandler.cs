@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MassTransit;
+using FitnessApp.Shared.Events;
 
 namespace FitnessApp.UserProfileService.Features.Commands.UploadProfilePicture
 {
@@ -14,11 +16,13 @@ namespace FitnessApp.UserProfileService.Features.Commands.UploadProfilePicture
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public UploadProfilePictureCommandHandler(IUnitOfWork unitOfWork, IFileStorageService fileStorageService)
+        public UploadProfilePictureCommandHandler(IUnitOfWork unitOfWork, IFileStorageService fileStorageService, IPublishEndpoint publishEndpoint)
         {
             _unitOfWork = unitOfWork;
             _fileStorageService = fileStorageService;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<ApiResponse<string>> Handle(UploadProfilePictureCommand request, CancellationToken cancellationToken)
@@ -57,6 +61,15 @@ namespace FitnessApp.UserProfileService.Features.Commands.UploadProfilePicture
 
             await _unitOfWork.UserProfiles.UpdateAsync(profile, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var userProfileUpdatedEvent = new UserProfileUpdatedEvent(
+                profile.UserId,
+                profile.FirstName,
+                profile.LastName,
+                profile.PhoneNumber,
+                profile.ProfilePictureUrl
+            );
+            await _publishEndpoint.Publish(userProfileUpdatedEvent, cancellationToken);
 
             return ApiResponse<string>.Success(fileUrl, "Profile picture updated successfully.");
         }

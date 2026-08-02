@@ -13,7 +13,7 @@ using SmartCoachService.Infrastructure.Messaging;
 using SmartCoachService.Infrastructure.Persistence;
 using NutritionCurrentUserService = NutritionService.Application.Common.Abstractions.ICurrentUserService;
 using SmartCoachCurrentUserService = SmartCoachService.Application.Common.Interfaces.ICurrentUserService;
-
+using FitnessApp.Shared.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
@@ -87,8 +87,7 @@ if (builder.Configuration.GetValue<bool>("RabbitMq:Enabled"))
     builder.Services.AddHostedService<ProgressContextConsumer>();
 }
 
-// ---------- Auth ----------
-builder.Services.AddAuthentication("Bearer").AddJwtBearer();
+builder.Services.AddSharedJwtAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
 
 var app = builder.Build();

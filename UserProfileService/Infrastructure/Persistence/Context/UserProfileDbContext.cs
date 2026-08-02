@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UserProfileService.Domain.Entities;
+using MassTransit;
 
 namespace UserProfileService.Infrastructure.Persistence.Context
 {
@@ -15,6 +16,10 @@ namespace UserProfileService.Infrastructure.Persistence.Context
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserProfileDbContext).Assembly);
+            
+            modelBuilder.AddInboxStateEntity();
+            modelBuilder.AddOutboxMessageEntity();
+            modelBuilder.AddOutboxStateEntity();
         }
     }
 }
