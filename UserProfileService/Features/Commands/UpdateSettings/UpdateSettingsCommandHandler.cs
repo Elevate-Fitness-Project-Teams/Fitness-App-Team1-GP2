@@ -6,16 +6,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using UserProfileService.Domain.Contracts;
 using UserProfileService.Domain.Entities;
+using MassTransit;
+using FitnessApp.Shared.Events;
 
 namespace FitnessApp.UserProfileService.Features.Commands.UpdateSettings
 {
     public class UpdateSettingsCommandHandler : IRequestHandler<UpdateSettingsCommand, ApiResponse<bool>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public UpdateSettingsCommandHandler(IUnitOfWork unitOfWork)
+        public UpdateSettingsCommandHandler(IUnitOfWork unitOfWork, IPublishEndpoint publishEndpoint)
         {
             _unitOfWork = unitOfWork;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<ApiResponse<bool>> Handle(UpdateSettingsCommand request, CancellationToken cancellationToken)
@@ -76,6 +80,15 @@ namespace FitnessApp.UserProfileService.Features.Commands.UpdateSettings
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var userProfileUpdatedEvent = new UserProfileUpdatedEvent(
+                user.UserId,
+                user.FirstName,
+                user.LastName,
+                user.PhoneNumber,
+                user.ProfilePictureUrl
+            );
+            await _publishEndpoint.Publish(userProfileUpdatedEvent, cancellationToken);
 
             return ApiResponse<bool>.Success(true, "Settings updated successfully.", 200);
         }

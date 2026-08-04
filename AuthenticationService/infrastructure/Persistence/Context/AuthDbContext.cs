@@ -2,7 +2,7 @@ using AuthenticationService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq.Expressions;
-
+using MassTransit;
 namespace AuthenticationService.infrastructure.Persistence.Context
 {
     public class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(options)
@@ -17,6 +17,10 @@ namespace AuthenticationService.infrastructure.Persistence.Context
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AuthDbContext).Assembly);
+            
+            modelBuilder.AddInboxStateEntity();
+            modelBuilder.AddOutboxMessageEntity();
+            modelBuilder.AddOutboxStateEntity();
 
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {

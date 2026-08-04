@@ -5,16 +5,19 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UserProfileService.Domain.Contracts;
-
+using MassTransit;
+using FitnessApp.Shared.Events;
 namespace FitnessApp.UserProfileService.Features.Commands.UpdateProfile
 {
     public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand, ApiResponse<string>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public UpdateProfileCommandHandler(IUnitOfWork unitOfWork)
+        public UpdateProfileCommandHandler(IUnitOfWork unitOfWork, IPublishEndpoint publishEndpoint)
         {
             _unitOfWork = unitOfWork;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<ApiResponse<string>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
@@ -43,6 +46,15 @@ namespace FitnessApp.UserProfileService.Features.Commands.UpdateProfile
 
             await _unitOfWork.UserProfiles.UpdateAsync(profile, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var userProfileUpdatedEvent = new UserProfileUpdatedEvent(
+                profile.UserId,
+                profile.FirstName,
+                profile.LastName,
+                profile.PhoneNumber,
+                profile.ProfilePictureUrl
+            );
+            await _publishEndpoint.Publish(userProfileUpdatedEvent, cancellationToken);
 
             return ApiResponse<string>.Success("Profile updated successfully.", "Success");
         }

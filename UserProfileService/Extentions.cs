@@ -39,6 +39,12 @@ namespace UserProfileService
 
             services.AddMassTransit(x =>
             {
+                x.AddEntityFrameworkOutbox<UserProfileDbContext>(o =>
+                {
+                    o.UseSqlServer();
+                    o.UseBusOutbox();
+                });
+
                 x.AddConsumer<UserProfileService.Features.Consumers.UserRegisteredConsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
