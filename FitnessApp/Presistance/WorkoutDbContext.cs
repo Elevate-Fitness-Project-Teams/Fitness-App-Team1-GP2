@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using WorkoutService.Domain.Entities;
 
 namespace WorkoutService.Database
@@ -14,6 +15,12 @@ namespace WorkoutService.Database
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(WorkoutDbContext).Assembly);
+
+            modelBuilder.AddInboxStateEntity();
+
+            modelBuilder.AddOutboxMessageEntity();
+
+            modelBuilder.AddOutboxStateEntity();
         }
         public DbSet<WorkoutPlan> WorkoutPlans { get; set; }
         public DbSet<Workout> Workouts { get; set; }
