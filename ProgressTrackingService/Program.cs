@@ -44,9 +44,9 @@ namespace ProgressTrackingService
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
-
-
+            
             app.MapControllers();
 
             app.Run();

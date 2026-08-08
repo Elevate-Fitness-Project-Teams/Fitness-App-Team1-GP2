@@ -25,12 +25,12 @@ public class WorkoutLog : BaseEntity<int>
     public int UserId { get; set; }
     
     // FK
-    public int WorkoutId { get; set; }
+    public int? WorkoutId { get; set; }
     
     public List<WorkoutLogExercise> WorkoutLogExercises { get; set; } = new List<WorkoutLogExercise>();
     
     // FK
-    public string SessionId { get; set; } = string.Empty;
+    public string? SessionId { get; set; } = string.Empty;
 
     #endregion
 }

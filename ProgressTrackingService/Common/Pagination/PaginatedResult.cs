@@ -30,7 +30,7 @@ public class PaginatedResult<TEntity>
     /// <summary>
     /// The actual data subset (list of entities/DTOs) for the current page.
     /// </summary>
-    public List<TEntity> Data { get; set; }
+    public List<TEntity>? Data { get; set; }
     
     [JsonConstructor]
     public PaginatedResult()

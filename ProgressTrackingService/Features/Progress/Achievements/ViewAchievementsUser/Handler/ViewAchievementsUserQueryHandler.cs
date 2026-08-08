@@ -25,6 +25,7 @@ public class ViewAchievementsUserQueryHandler(
         
         var userAchievements = _appDbContext.UserAchievements
             .Where(ua => ua.UserId == request.UserId)
+            .OrderByDescending(ua => ua.AchievedAt)
             .Select(ua => new UserAchievementDto()
             {
                 Name = ua.Achievement!.Name,

@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using ProgressTrackingService.Common.Pagination;
@@ -9,23 +11,28 @@ using ProgressTrackingService.Features.Progress.Achievements.ViewAchievementsUse
 namespace ProgressTrackingService.Features.Progress.Achievements.ViewAchievementsUser.EndPoint;
 
 [ApiController]
-[Route("/api/v1/progress/achievements/{userId}")]
+[Route("/api/v1/progress/achievements")]
 public class ViewAchievementsUserEndPoint(IMediator mediator) : ControllerBase
 {
     private readonly IMediator _mediator = mediator;
 
-    [HttpGet]
-    // [Authorize]
+    [HttpGet("{userId}")]
+    [Authorize]
     [OutputCache(Duration = 30)]
-    public async Task<ActionResult<ApiResponse<PaginatedResult<ViewAchievementsUserViewModel>>>> GetAllAchievementsUsers([FromRoute] string userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ApiResponse<PaginatedResult<ViewAchievementsUserViewModel>>>> GetAllAchievementsUsers(string userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(userId)) 
-            return Unauthorized(ApiResponse<PaginatedResult<ViewAchievementsUserViewModel>>.Failure("Unauthorized access. Please login again.", Common.Response.StatusCode.Unauthorized));
+        var userIdFromToken = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         
-
-        if (!int.TryParse(userId, out var parsedUserId))
+        if (int.TryParse(userId, out var parsedUserId))
+        {
+            if (userIdFromToken != userId)
+                return Unauthorized(ApiResponse<PaginatedResult<ViewAchievementsUserViewModel>>.Failure("Unauthorized access. Please login again.", Common.Response.StatusCode.Unauthorized));
+        }
+        else
+        {
             return BadRequest(ApiResponse<PaginatedResult<ViewAchievementsUserViewModel>>.Failure("Invalid User ID format. Expected a number.", Common.Response.StatusCode.BadRequest));
-
+        }
+        
         var result = await _mediator.Send(new ViewAchievementsUserQuery(parsedUserId, pageNumber, pageSize), cancellationToken);
 
         if (!result.IsSuccess)

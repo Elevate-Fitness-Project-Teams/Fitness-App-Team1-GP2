@@ -4,5 +4,5 @@ namespace ProgressTrackingService.Features.Progress.Achievements.ViewAchievement
 
 public class ViewAchievementsUserViewModel
 {
-    public List<UserAchievementDto> UserAchievements { get; set; } = new List<UserAchievementDto>();
+    public List<UserAchievementDto>? UserAchievements { get; set; } = new List<UserAchievementDto>();
 }

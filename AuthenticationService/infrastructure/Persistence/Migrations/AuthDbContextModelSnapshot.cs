@@ -327,10 +327,6 @@ namespace AuthenticationService.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("BusName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
@@ -351,8 +347,6 @@ namespace AuthenticationService.Infrastructure.Migrations
                     b.HasKey("OutboxId");
 
                     b.HasIndex("Created");
-
-                    b.HasIndex("BusName", "Created");
 
                     b.ToTable("OutboxState");
                 });

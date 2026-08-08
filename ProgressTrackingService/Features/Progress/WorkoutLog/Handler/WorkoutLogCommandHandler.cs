@@ -1,10 +1,12 @@
 using MediatR;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using ProgressTrackingService.Common.Response;
 using ProgressTrackingService.Features.Progress.WorkoutLog.Dto;
 using ProgressTrackingService.Infrastructure.Persistence.Context;
 using ProgressTrackingService.Features.Progress.WorkoutLog.Events;
 using ProgressTrackingService.Features.Progress.WorkoutLog.Command;
+using ProgressTrackingService.Features.Progress.WorkoutLog.Request;
 using ProgressTrackingService.Features.Progress.WorkoutLog.Services;
 
 namespace ProgressTrackingService.Features.Progress.WorkoutLog.Handler;
@@ -29,9 +31,33 @@ public class WorkoutLogCommandHandler (
         // Step 1: Begin Transaction
         await using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
 
+        // Event
+        // "message": {
+        //     "sessionId": "c0cde8bd37f24501b18b9938c74ee98a",
+        //     "userId": 10,
+        //     "workoutId": 1,
+        //     "startedAt": "2026-08-07T14:16:59.430317Z",
+        //     "eventId": "9521519c-f1aa-4a56-bc8b-53f470abafc8",
+        //     "createdAt": "2026-08-07T14:16:59.609675Z"
+        // },
+        
         try
         {
-            // Step 2: Insert WorkoutLog - Step 3: Insert WorkoutLogExercises
+            // Step 2: 
+            var workoutSessionTrackings = await _appDbContext.WorkoutSessionTrackings
+                .OrderByDescending(x => x.StartedAt)
+                .FirstOrDefaultAsync(x =>  x.UserId == request.UserId, cancellationToken);
+            
+            if (workoutSessionTrackings?.SessionId == null)
+                return ResponseResult<WorkoutLogDto>.Failure(StatusCode.NotFound, "Workout session was not found.");
+
+            if (workoutSessionTrackings.UserId != request.UserId)
+                return ResponseResult<WorkoutLogDto>.Failure(StatusCode.Unauthorized, "This workout session does not belong to the current user.");
+            
+            request.Request.WorkoutId = workoutSessionTrackings.WorkoutId;
+            request.Request.SessionId = workoutSessionTrackings.SessionId;
+            
+            // Step 3: Insert WorkoutLog - Step 3: Insert WorkoutLogExercises
             int logId = await _workoutLogService.InsertWorkoutLogAndExercises(transaction, request, cancellationToken); // Return WorkOutId
             
             // Step 4: Update Streak
@@ -40,10 +66,10 @@ public class WorkoutLogCommandHandler (
             // Step 5: Update UserStatistics
             await _userStatisticService.UpdateUserStatistics(transaction, request, cancellationToken);
             
-            // Step 7: Check Achievements - Step 8: Insert UserAchievements
+            // Step 6: Check Achievements - Step 7: Insert UserAchievements
             var achievementResult = await _achievementService.CheckAndUnlockAchievements(transaction, request.UserId, cancellationToken);
             
-            // Step 9: Publish WorkoutLogged
+            // Step 8: Publish WorkoutLogged
             await _publishEndpoint.Publish(new WorkoutLoggedEvent
             {
                 UserId = request.UserId,
@@ -52,7 +78,7 @@ public class WorkoutLogCommandHandler (
                 CaloriesBurnedAt = DateTimeOffset.UtcNow
             }, cancellationToken);
             
-            // Step 10: Publish AchievementEarned
+            // Step 9: Publish AchievementEarned
             if (achievementResult.IsUnlocked)
             {
                 await _publishEndpoint.Publish(new AchievementEarnedEvent
@@ -64,6 +90,7 @@ public class WorkoutLogCommandHandler (
                 }, cancellationToken);
             }
             
+            // Step 10: Commit
             await transaction.CommitAsync(cancellationToken);
             
             return ResponseResult<WorkoutLogDto>.Success(new WorkoutLogDto()

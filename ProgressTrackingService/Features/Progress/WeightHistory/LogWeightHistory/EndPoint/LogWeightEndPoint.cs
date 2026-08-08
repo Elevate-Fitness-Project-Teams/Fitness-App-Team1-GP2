@@ -1,5 +1,7 @@
 using MediatR;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ProgressTrackingService.Common.Response;
 using ProgressTrackingService.Features.Progress.WeightHistory.LogWeightHistory.Command;
 using ProgressTrackingService.Features.Progress.WeightHistory.LogWeightHistory.Request;
@@ -8,22 +10,24 @@ using ProgressTrackingService.Features.Progress.WeightHistory.LogWeightHistory.V
 namespace ProgressTrackingService.Features.Progress.WeightHistory.LogWeightHistory.EndPoint;
 
 [ApiController]
-[Route("/api/v1/progress/weight")]
+[Route("/api/v1/progress/weight/{userId}")]
 public class LogWeightEndPoint (IMediator mediator): ControllerBase
 {
     private readonly IMediator _mediator = mediator;
     
     [HttpPost]
-    // [Authorize]
-    public async Task<ActionResult<ApiResponse<LogWeightViewModel>>> LogWeight([FromBody] LogWeightRequest request, CancellationToken cancellationToken)
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<LogWeightViewModel>>> LogWeight([FromRoute] string userId, [FromBody] LogWeightRequest request, CancellationToken cancellationToken)
     {
-        var userId = HttpContext.Request.Headers["UserId"];
+        var userIdFromToken = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         
-        if (string.IsNullOrEmpty(userId))
+        if (string.IsNullOrEmpty(userIdFromToken) || userIdFromToken != userId)
             return Unauthorized(ApiResponse<LogWeightViewModel>.Failure("Unauthorized access. Please login again.", Common.Response.StatusCode.Unauthorized));
 
-        
-        var result = await _mediator.Send(new LogWeightCommand(request, int.Parse(userId!)), cancellationToken);
+        if (!int.TryParse(userIdFromToken, out var parsedUserId))
+            return BadRequest(ApiResponse<LogWeightViewModel>.Failure("Invalid User ID format. Expected a number.", Common.Response.StatusCode.BadRequest));
+
+        var result = await _mediator.Send(new LogWeightCommand(request, parsedUserId), cancellationToken);
 
         if (!result.IsSuccess)
         {

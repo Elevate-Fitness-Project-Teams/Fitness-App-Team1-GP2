@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,21 +9,22 @@ using ProgressTrackingService.Features.Progress.Dashboard.ViewProgressUserStats.
 namespace ProgressTrackingService.Features.Progress.Dashboard.ViewProgressUserStats.EndPoint;
 
 [ApiController]
-[Route("/api/v1/progress/stats/{userId}")]
+[Route("/api/v1/progress/stats")]
 public class ViewProgressUserStatsEndPoint (IMediator mediator): ControllerBase
 {
     private readonly IMediator _mediator = mediator;
 
-    [HttpGet]
-    // [Authorize]
+    [Authorize]
+    [HttpGet("{userId}")]
     public async Task<ActionResult<ApiResponse<ViewProgressUserStatsViewModel>>> ViewProgressUserStats([FromRoute] string userId, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized(ApiResponse<ViewProgressUserStatsViewModel>.Failure("Unauthorized access. Please login again.", Common.Response.StatusCode.Unauthorized));
-
-            
-        if (!int.TryParse(userId, out int parsedUserId))
+        var userIdFromToken = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        if (!int.TryParse(userIdFromToken, out var parsedUserId))
             return BadRequest(ApiResponse<ViewProgressUserStatsQuery>.Failure("Invalid User ID format. Expected a number.", Common.Response.StatusCode.BadRequest));
+        
+        if (string.IsNullOrEmpty(userId) || userIdFromToken != userId)
+            return Unauthorized(ApiResponse<ViewProgressUserStatsViewModel>.Failure("Unauthorized access. Please login again.", Common.Response.StatusCode.Unauthorized));
         
         var result = await _mediator.Send(new ViewProgressUserStatsQuery(parsedUserId), cancellationToken);
 

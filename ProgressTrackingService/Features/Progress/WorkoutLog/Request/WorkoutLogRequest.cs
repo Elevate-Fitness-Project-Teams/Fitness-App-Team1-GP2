@@ -5,9 +5,9 @@ namespace ProgressTrackingService.Features.Progress.WorkoutLog.Request;
 
 public class WorkoutLogRequest
 {
-    public int WorkoutId { get; set; }
+    public int? WorkoutId { get; set; }
     
-    public string SessionId { get; set; } = null!;
+    public string? SessionId { get; set; } = null!;
     
     public DateTimeOffset CompletedAt { get; set; }
     

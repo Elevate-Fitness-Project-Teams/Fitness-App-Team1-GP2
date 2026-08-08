@@ -21,10 +21,10 @@ public class WorkoutLogsDto
     public int UserId { get; set; }
     
     // FK
-    public int WorkoutId { get; set; }
+    public int? WorkoutId { get; set; }
     
     public List<WorkoutLogExerciseDto> WorkoutLogExercises { get; set; } = new List<WorkoutLogExerciseDto>();
     
     // FK
-    public string SessionId { get; set; } = string.Empty;
+    public string? SessionId { get; set; } = string.Empty;
 }

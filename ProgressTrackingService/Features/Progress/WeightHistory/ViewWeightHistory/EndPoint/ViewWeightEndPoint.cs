@@ -1,7 +1,10 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProgressTrackingService.Common.Pagination;
 using ProgressTrackingService.Common.Response;
+using ProgressTrackingService.Features.Progress.WeightHistory.LogWeightHistory.ViewModel;
 using ProgressTrackingService.Features.Progress.WeightHistory.ViewWeightHistory.Query;
 using ProgressTrackingService.Features.Progress.WeightHistory.ViewWeightHistory.ViewModel;
 
@@ -13,10 +16,19 @@ public class ViewWeightEndPoint(IMediator mediator) : ControllerBase
 {
     private readonly IMediator _mediator = mediator;
 
-    [HttpGet("{userId:int}")]
-    public async Task<ActionResult<ApiResponse<PaginatedResult<ViewWeightViewModel>>>> GetWeightHistory(int userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+    [Authorize]
+    [HttpGet("{userId}")]
+    public async Task<ActionResult<ApiResponse<PaginatedResult<ViewWeightViewModel>>>> GetWeightHistory([FromRoute] string userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new ViewWeightQuery(userId, pageNumber, pageSize), cancellationToken);
+        var userIdFromToken = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        if (string.IsNullOrEmpty(userIdFromToken))
+            return Unauthorized(ApiResponse<LogWeightViewModel>.Failure("Unauthorized access. Please login again.", Common.Response.StatusCode.Unauthorized));
+
+        if (!int.TryParse(userIdFromToken, out var parsedUserId))
+            return BadRequest(ApiResponse<LogWeightViewModel>.Failure("Invalid User ID format. Expected a number.", Common.Response.StatusCode.BadRequest));
+        
+        var result = await _mediator.Send(new ViewWeightQuery(parsedUserId, pageNumber, pageSize), cancellationToken);
 
         if (!result.IsSuccess)
         {

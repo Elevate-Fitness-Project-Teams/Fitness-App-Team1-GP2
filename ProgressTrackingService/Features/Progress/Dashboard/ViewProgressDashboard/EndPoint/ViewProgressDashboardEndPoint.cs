@@ -1,5 +1,4 @@
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProgressTrackingService.Common.Response;
 using ProgressTrackingService.Features.Progress.Dashboard.ViewProgressDashboard.Query;
@@ -14,7 +13,6 @@ public class ViewProgressDashboardEndPoint (IMediator mediator): ControllerBase
     private readonly IMediator _mediator = mediator;
 
     [HttpGet]
-    // [Authorize]
     public async Task<ActionResult<ApiResponse<ViewProgressDashboardViewModel>>> ViewProgressDashboard(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new ViewProgressDashboardQuery(), cancellationToken);

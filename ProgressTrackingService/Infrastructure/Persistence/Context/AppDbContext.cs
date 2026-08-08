@@ -26,4 +26,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<WeightHistory> WeightHistories { get; set; }
     
     public DbSet<WorkoutLogExercise> WorkoutLogExercises { get; set; }
+    
+    public DbSet<WorkoutSessionTracking> WorkoutSessionTrackings { get; set; }
 }

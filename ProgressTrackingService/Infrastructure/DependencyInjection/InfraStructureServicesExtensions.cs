@@ -2,10 +2,12 @@ using MediatR;
 using MassTransit;
 using FluentValidation;
 using System.Reflection;
+using FitnessApp.Shared.Extensions;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using ProgressTrackingService.Common.Redis;
 using ProgressTrackingService.Features.Progress.WeightHistory.LogWeightHistory.Events;
+using ProgressTrackingService.Features.Progress.WorkoutLog.Consumer;
 using ProgressTrackingService.Features.Progress.WorkoutLog.Events;
 using ProgressTrackingService.Infrastructure.Persistence.Context;
 
@@ -25,7 +27,11 @@ public static class InfraStructureServicesExtensions
         var assembly = Assembly.GetExecutingAssembly();
 
         // MediatR -> CQRS
-        services.AddMediatR(assembly);
+        // services.AddMediatR(assembly);
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+        });
         
         // Fluent Validation
         services.AddValidatorsFromAssembly(assembly);
@@ -52,6 +58,8 @@ public static class InfraStructureServicesExtensions
                 
                 cfg.ConfigureEndpoints(context);
             });
+            
+            x.AddConsumer<WorkoutSessionStartedConsumer>();
         });
         
         // Cloud - Local Redis Cache (Service)
@@ -64,6 +72,9 @@ public static class InfraStructureServicesExtensions
         
         // Redis Services
         services.AddScoped(typeof(RedisServices<>));
+        
+        // JWT Authentication
+        services.AddSharedJwtAuthentication(configuration);
         
         return services;
     }

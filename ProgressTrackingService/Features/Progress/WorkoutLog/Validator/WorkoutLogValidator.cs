@@ -7,13 +7,13 @@ public class WorkoutLogValidator : AbstractValidator<WorkoutLogRequest>
 {
     public WorkoutLogValidator()
     {
-        RuleFor(x => x.WorkoutId)
-            .NotEmpty()
-            .WithMessage("Workout id is required");
-
-        RuleFor(x => x.SessionId)
-            .NotEmpty()
-            .WithMessage("Session id is required");
+        // RuleFor(x => x.WorkoutId)
+        //     .NotEmpty()
+        //     .WithMessage("Workout id is required");
+        //
+        // RuleFor(x => x.SessionId)
+        //     .NotEmpty()
+        //     .WithMessage("Session id is required");
 
         RuleFor(x => x.CompletedAt)
             .NotEmpty()
