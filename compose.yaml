@@ -1,0 +1,7 @@
+﻿services:
+  progresstrackingservice:
+    image: progresstrackingservice
+    build:
+      context: .
+      dockerfile: ProgressTrackingService/ProgressTrackingService/Dockerfile
+

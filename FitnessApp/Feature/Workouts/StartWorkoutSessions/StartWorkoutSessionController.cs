@@ -2,8 +2,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using WorkoutService.Common;
+using FitnessApp.Common.Security;
 
 namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
 {
@@ -12,7 +12,8 @@ namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
     [Authorize]
     public class StartWorkoutSessionController(
         IValidator<StartWorkoutSessionCommand> validator,
-        IMediator mediator) : ControllerBase
+        IMediator mediator,
+        IUserContext userContext) : ControllerBase
     {
         [HttpPost("{id:int}/start")]
         public async Task<IActionResult> StartSession(
@@ -21,24 +22,8 @@ namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
             CancellationToken cancellationToken)
         {
 
-            var userIdValue = 
-           User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-           ?? User.FindFirst("sub")?.Value
-           ?? User.FindFirst("userId")?.Value;
+            var userId = userContext.UserId;
 
-            if (!int.TryParse(userIdValue, out var userId))
-            {
-                var response = ApiResponse<StartWorkoutSessionResponse>
-                    .Failure(ErrorCode.Unauthorized);
-
-                return Unauthorized(response);
-            }
-
-            var request = new StartWorkoutSessionCommand(
-                id,
-                userId,
-                requestBody.Difficulty,
-                requestBody.PlannedDuration);
 
             var command = new StartWorkoutSessionCommand(
                 id,
@@ -47,7 +32,12 @@ namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
                 requestBody.PlannedDuration
             );
 
-            var validationResult = await validator.ValidateAsync(command, cancellationToken);
+
+            var validationResult =
+                await validator.ValidateAsync(
+                    command,
+                    cancellationToken);
+
 
             if (!validationResult.IsValid)
             {
@@ -55,24 +45,40 @@ namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
                     .Select(e => e.ErrorMessage)
                     .ToList();
 
-                var response = ApiResponse<StartWorkoutSessionResponse>
-                    .Failure(ErrorCode.ValidationError, errors);
+                var response =
+                    ApiResponse<StartWorkoutSessionResponse>
+                    .Failure(
+                        ErrorCode.ValidationError,
+                        errors);
 
                 return BadRequest(response);
             }
 
-            var result = await mediator.Send(command, cancellationToken);
+
+            var result =
+                await mediator.Send(
+                    command,
+                    cancellationToken);
+
 
             if (!result.IsSuccess)
             {
-                var response = ApiResponse<StartWorkoutSessionResponse>
+                var response =
+                    ApiResponse<StartWorkoutSessionResponse>
                     .Failure(result.ErrorCode);
 
-                return StatusCode(response.StatusCode, response);
+                return StatusCode(
+                    response.StatusCode,
+                    response);
             }
 
-            var responseSuccess = ApiResponse<StartWorkoutSessionResponse>
-                .Success(result.Data, "Workout session started successfully.");
+
+            var responseSuccess =
+                ApiResponse<StartWorkoutSessionResponse>
+                .Success(
+                    result.Data,
+                    "Workout session started successfully.");
+
 
             return Ok(responseSuccess);
         }

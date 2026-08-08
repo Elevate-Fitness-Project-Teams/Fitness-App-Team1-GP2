@@ -1,15 +1,15 @@
-﻿using MediatR;
+﻿using FitnessApp.Shared.Events;
+using MassTransit;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WorkoutService.Common;
 using WorkoutService.Contracts;
-using WorkoutService.Contracts.Events;
 using WorkoutService.Domain.Entities;
 using WorkoutService.Domain.Enums;
-using static System.Collections.Specialized.BitVector32;
 
 namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
 {
-    public class StartWorkoutSessionHandler(IUnitOfWork unitOfWork, IEventBus eventBus) : IRequestHandler<StartWorkoutSessionCommand, RequestResult<StartWorkoutSessionResponse>>
+    public class StartWorkoutSessionHandler(IUnitOfWork unitOfWork,IPublishEndpoint publishEndpoint) : IRequestHandler<StartWorkoutSessionCommand, RequestResult<StartWorkoutSessionResponse>>
     {
         public async Task<RequestResult<StartWorkoutSessionResponse>> Handle(StartWorkoutSessionCommand request, CancellationToken cancellationToken)
         {
@@ -40,13 +40,13 @@ namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
              }).ToListAsync(cancellationToken);
 
 
-                var existingSession = await unitOfWork
-            .GetRepository<WorkoutSession>()
-            .GetAll()
-            .Where(x =>
-                x.WorkoutId == request.workoutId &&
-                x.UserId == request.userId &&
-                x.Status == WorkoutSessionStatus.Active).FirstOrDefaultAsync(cancellationToken);
+            var existingSession = await unitOfWork
+        .GetRepository<WorkoutSession>()
+        .GetAll()
+        .Where(x =>
+            x.WorkoutId == request.workoutId &&
+            x.UserId == request.userId &&
+            x.Status == WorkoutSessionStatus.Active).FirstOrDefaultAsync(cancellationToken);
 
 
             if (existingSession != null)
@@ -74,15 +74,17 @@ namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
             };
 
             await unitOfWork.GetRepository<WorkoutSession>().AddAsync(newSession, cancellationToken);
+
+            await publishEndpoint.Publish(
+             new WorkoutSessionStartedEvent(
+                 newSession.SessionId,
+                 newSession.UserId,
+                 newSession.WorkoutId,
+                 newSession.StartedAt
+             ),
+             cancellationToken);
+            Console.WriteLine("EVENT PUBLISHED");
             await unitOfWork.CompleteAsync(cancellationToken);
-
-            await eventBus.PublishAsync(new WorkoutSessionStartedEvent(
-                newSession.SessionId,
-                newSession.UserId,
-                newSession.WorkoutId,
-                newSession.StartedAt
-            ), cancellationToken);
-
 
             var response = new StartWorkoutSessionResponse
             {
@@ -93,7 +95,7 @@ namespace WorkoutService.Feature.Workouts.StartWorkoutSessions
                 Status = newSession.Status.ToString(),
                 StartedAt = newSession.StartedAt,
                 Exercises = exercises
-                
+
             };
 
             return RequestResult<StartWorkoutSessionResponse>.Success(response);

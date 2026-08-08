@@ -1,0 +1,33 @@
+@SmartCoachService_HostAddress = http://localhost:5107
+@token = REPLACE_WITH_JWT
+
+### 7.1 Send chat message (new session)
+POST {{SmartCoachService_HostAddress}}/api/v1/smart-coach/chat
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "message": "What should I eat before a leg day workout?"
+}
+
+### 7.1 Send chat message (existing session)
+POST {{SmartCoachService_HostAddress}}/api/v1/smart-coach/chat
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "message": "And after the workout?",
+  "sessionId": "11111111-1111-1111-1111-111111111111"
+}
+
+### 7.2 Get chat history for a session
+GET {{SmartCoachService_HostAddress}}/api/v1/smart-coach/history?sessionId=11111111-1111-1111-1111-111111111111&page=1&pageSize=50
+Authorization: Bearer {{token}}
+
+### 7.2 Get caller's chat sessions
+GET {{SmartCoachService_HostAddress}}/api/v1/smart-coach/history?page=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### 7.3 Get home feed
+GET {{SmartCoachService_HostAddress}}/api/v1/home
+Authorization: Bearer {{token}}
