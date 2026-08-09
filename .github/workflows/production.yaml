@@ -1,0 +1,207 @@
+﻿name: Production Build & Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: docker-build-production
+  cancel-in-progress: true
+
+env:
+  DOCKER_REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKER_REPO: api-fitness-app
+  BACKEND_ENV: api-fitness-app
+
+jobs:
+  # =========================================================
+  # GENERATE TAG
+  # =========================================================
+  generate-tag:
+    name: Generate Timestamp
+    runs-on: ubuntu-latest
+
+    outputs:
+      tag: ${{ steps.timestamp.outputs.tag }}
+
+    steps:
+      - name: Generate timestamp for tagging (Egypt Time Zone)
+        id: timestamp
+        run: |
+          export TZ=Africa/Cairo
+          echo "tag=$(date +'%Y%m%d%H%M')" >> "$GITHUB_OUTPUT"
+
+
+  # =========================================================
+  # BUILD & PUSH DOCKER IMAGES
+  # =========================================================
+  build-and-push:
+    name: Build & Push ${{ matrix.service }}
+
+    needs: generate-tag
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        include:
+
+          - service: auth
+            dockerfile: ./AuthenticationService/Dockerfile
+
+          - service: profile
+            dockerfile: ./UserProfileService/Dockerfile
+
+          - service: workout
+            dockerfile: ./FitnessApp/Dockerfile
+
+          - service: progress
+            dockerfile: ./ProgressTrackingService/Dockerfile
+
+          - service: notification
+            dockerfile: ./NotificationService/Dockerfile
+
+          - service: fce
+            dockerfile: ./FCEService/Dockerfile
+
+          - service: gateway
+            dockerfile: ./API_Gateway/Dockerfile
+
+    steps:
+      # -----------------------------------------------------
+      # Checkout
+      # -----------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------
+      # Docker Buildx
+      # -----------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+          driver-opts: network=host
+
+      # -----------------------------------------------------
+      # Docker Hub Login
+      # -----------------------------------------------------
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+
+      # -----------------------------------------------------
+      # Build & Push
+      # -----------------------------------------------------
+      - name: Build and Push ${{ matrix.service }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+
+          push: true
+
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-${{ matrix.service }}-${{ needs.generate-tag.outputs.tag }}
+            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-${{ matrix.service }}-latest
+
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  # =========================================================
+  # DEPLOYMENT
+  # =========================================================
+#  deploy:
+#    name: Deploy to Production
+#
+#    needs:
+#      - generate-tag
+#      - build-and-push
+#
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#
+#      - name: Deploy to Production Server
+#        uses: appleboy/ssh-action@v1.2.2
+#        with:
+#          host: ${{ secrets.PROD_HOST }}
+#          username: ${{ secrets.PROD_USER }}
+#          key: ${{ secrets.PROD_SSH_KEY }}
+#
+#          script: |
+#
+#            cd /opt/fitness-app
+#
+#            echo "======================================"
+#            echo "Starting Production Deployment"
+#            echo "======================================"
+#
+#            echo "Logging into Docker Hub..."
+#
+#            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | \
+#            docker login \
+#              -u "${{ secrets.DOCKERHUB_USERNAME }}" \
+#              --password-stdin
+#
+#            echo "Pulling latest images..."
+#
+#            docker compose -f docker-compose-production.yml pull
+#
+#            echo "Starting containers..."
+#
+#            docker compose -f docker-compose-production.yml up -d
+#
+#            echo "Removing unused images..."
+#
+#            docker image prune -f
+#
+#            echo "======================================"
+#            echo "Deployment Completed"
+#            echo "======================================"
+#
+#
+
+  # =========================================================
+  # DEPLOYMENT SUMMARY
+  # =========================================================
+  deployment-summary:
+    name: Deployment Summary
+
+    needs:
+      - generate-tag
+      - build-and-push
+      - deploy
+
+    runs-on: ubuntu-latest
+
+    if: always()
+
+    steps:
+
+      - name: Deployment Summary
+        run: |
+
+          echo "## 🚀 Production Deployment" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "| Information | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------------|-------|" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "| Repository | ${{ github.repository }} |" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "| Branch | ${{ github.ref_name }} |" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "| Commit | ${{ github.sha }} |" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "| Tag | ${{ needs.generate-tag.outputs.tag }} |" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "| Docker Image | ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }} |" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "| Deployment | ${{ needs.deploy.result }} |" >> "$GITHUB_STEP_SUMMARY"
