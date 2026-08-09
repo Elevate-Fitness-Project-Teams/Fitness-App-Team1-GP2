@@ -41,6 +41,8 @@ public static class InfraStructureServicesExtensions
         // MassTransit
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<WorkoutSessionStartedConsumer>();
+            
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitSection = configuration.GetSection("RabbitMQConnection");
