@@ -51,8 +51,15 @@ namespace NotificationService
                             h.Password(
                                 rabbitSection["Password"] ?? "guest");
                         });
-
-
+                        
+                    // Retry Policy
+                    cfg.UseMessageRetry(retry =>
+                    {
+                        retry.Interval(
+                            3,
+                            TimeSpan.FromSeconds(5));
+                    });
+                    
                     cfg.ReceiveEndpoint(
                         "notification.achievement-earned",
                         e =>

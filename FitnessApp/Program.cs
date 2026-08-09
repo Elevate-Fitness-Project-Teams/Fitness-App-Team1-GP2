@@ -181,7 +181,14 @@ namespace FitnessApp
                                  h.Username(options.UserName);
                                  h.Password(options.Password);
                              });
-
+                    // Retry Policy
+                    cfg.UseMessageRetry(retry =>
+                    {
+                        retry.Interval(
+                            3,
+                            TimeSpan.FromSeconds(5));
+                    });
+                    
                     cfg.ConfigureEndpoints(context);
                 });
             });

@@ -58,10 +58,18 @@ public static class InfraStructureServicesExtensions
                 cfg.Message<WorkoutLoggedEvent>(m => m.SetEntityName("workout-logged-exchange"));
                 cfg.Message<AchievementEarnedEvent>(m => m.SetEntityName("achievement-earned-exchange"));
                 
+                // Retry Policy
+                cfg.UseMessageRetry(retry =>
+                {
+                    retry.Interval(
+                        3,
+                        TimeSpan.FromSeconds(5));
+                });
+                
                 cfg.ConfigureEndpoints(context);
             });
             
-            x.AddConsumer<WorkoutSessionStartedConsumer>();
+            // x.AddConsumer<WorkoutSessionStartedConsumer>();
         });
         
         // Cloud - Local Redis Cache (Service)
