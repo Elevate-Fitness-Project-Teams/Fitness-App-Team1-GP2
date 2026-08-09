@@ -49,15 +49,16 @@ namespace AuthenticationService
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    cfg.Host(configuration["RabbitMQ:Host"] ?? "localhost", "/", h => {
-                        h.Username("guest");
-                        h.Password("guest");
-                    });
+                    var rabbitSection = configuration.GetSection("RabbitMQConnection");
 
-                    cfg.ConfigureEndpoints(context);
+                    cfg.Host(rabbitSection["HostName"], h =>
+                    {
+                        h.Username(rabbitSection["UserName"] ?? "guest");
+                        h.Password(rabbitSection["Password"] ?? "guest");
+                    });
                 });
             });
-
+            
             services.AddHttpContextAccessor();
 
             services.AddSingleton<ITokenService, TokenService>();

@@ -250,13 +250,12 @@ namespace ProgressTrackingService.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SessionId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("WorkoutId")
+                    b.Property<int?>("WorkoutId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -333,7 +332,7 @@ namespace ProgressTrackingService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WorkoutSessionTrackings");
+                    b.ToTable("WorkoutSessionTrackings", "ProgressTracking");
                 });
 
             modelBuilder.Entity("ProgressTrackingService.Domain.Entities.UserAchievement", b =>

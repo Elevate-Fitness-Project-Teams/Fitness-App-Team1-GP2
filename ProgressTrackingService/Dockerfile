@@ -28,3 +28,15 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "ProgressTrackingService.dll"]
+
+# After building the image, you can run the container with the following command:
+#docker run --name progresstrackingservice \
+#-p 5001:8080 \
+#-e ASPNETCORE_ENVIRONMENT=Development \
+#-e ASPNETCORE_URLS=http://+:8080 \
+#-e RabbitMQConnection__HostName=host.docker.internal \
+#-e RabbitMQConnection__Port=5672 \
+#-e RabbitMQConnection__UserName=guest \
+#-e RabbitMQConnection__Password=guest \
+#-e ConnectionStrings__DefaultConnection="Server=host.docker.internal,1433;Database=ProgressTrackingService;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;" \
+#progresstrackingservice

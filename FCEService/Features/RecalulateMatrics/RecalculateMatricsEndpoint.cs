@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FCEService.Features.RecalulateMatrics
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/fitness/recalculate-metrics")]
     [ApiController]
     public class RecalculateMatricsEndpoint : ControllerBase
     {

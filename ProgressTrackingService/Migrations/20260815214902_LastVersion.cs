@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProgressTrackingService.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class LastVersion : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -117,12 +117,29 @@ namespace ProgressTrackingService.Migrations
                     CompletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     DifficultyLevel = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    WorkoutId = table.Column<int>(type: "int", nullable: false),
-                    SessionId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    WorkoutId = table.Column<int>(type: "int", nullable: true),
+                    SessionId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WorkoutLogs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkoutSessionTrackings",
+                schema: "ProgressTracking",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SessionId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WorkoutId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    StartedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkoutSessionTrackings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -278,6 +295,10 @@ namespace ProgressTrackingService.Migrations
 
             migrationBuilder.DropTable(
                 name: "WorkoutLogExercises",
+                schema: "ProgressTracking");
+
+            migrationBuilder.DropTable(
+                name: "WorkoutSessionTrackings",
                 schema: "ProgressTracking");
 
             migrationBuilder.DropTable(

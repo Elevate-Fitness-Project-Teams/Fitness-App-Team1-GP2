@@ -1,98 +1,178 @@
 services:
- sqlserver:
-  image: mcr.microsoft.com/mssql/server:2022-latest
-  container_name: elevate-sqlserver
-  environment:
-    ACCEPT_EULA: "Y"
-    MSSQL_SA_PASSWORD: "P@ssw0rd12345"
-    SA_PASSWORD: "P@ssw0rd12345"
-  ports:
-    - "1434:1433"
-  volumes:
-    - sqlserver_data:/var/opt/mssql
 
- rabbitmq:
-    image: rabbitmq:3-management
-    container_name: elevate-rabbitmq
+  # =========================================================
+  # AUTHENTICATION SERVICE
+  # =========================================================
+  authenticationservice:
+    image: fitnessapp.authenticationservice
+    build:
+      context: .
+      dockerfile: AuthenticationService/Dockerfile
+    container_name: authentication-service
     ports:
-      - "5673:5672"
-      - "15673:15672"
+      - "8087:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
 
- notificationservice:
+      ConnectionStrings__AuthenticationConnection: "Server=host.docker.internal,1433;Database=AuthenticationService;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;Encrypt=False"
+
+      RabbitMQConnection__HostName: host.docker.internal
+      RabbitMQConnection__Port: 5673
+      RabbitMQConnection__UserName: guest
+      RabbitMQConnection__Password: guest
+
+    restart: on-failure
+
+  # =========================================================
+  # USER PROFILE SERVICE
+  # =========================================================
+  userprofileservice:
+    image: fitnessapp.userprofileservice
+    build:
+      context: .
+      dockerfile: UserProfileService/Dockerfile
+    container_name: userprofile-service
+    ports:
+      - "8088:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__UserProfileConnection: "Server=host.docker.internal,1433;Database=UserProfileService;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;Encrypt=False"
+
+    restart: on-failure
+
+  # =========================================================
+  # WORKOUT SERVICE
+  # =========================================================
+  workoutservice:
+    image: fitnessapp.workoutservice
+    build:
+      context: .
+      dockerfile: FitnessApp/Dockerfile
+    container_name: workout-service
+    ports:
+      - "8089:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=WorkoutService;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;Encrypt=False"
+
+      RabbitMqOptions__HostName: host.docker.internal
+      RabbitMqOptions__Port: 5673
+      RabbitMqOptions__UserName: guest
+      RabbitMqOptions__Password: guest
+      RabbitMqOptions__ExchangeName: workout.events
+
+    restart: on-failure
+
+  # =========================================================
+  # PROGRESS TRACKING SERVICE
+  # =========================================================
+  progresstrackingservice:
+    image: fitnessapp.progresstrackingservice
+    build:
+      context: .
+      dockerfile: ProgressTrackingService/Dockerfile
+    container_name: progress-tracking-service
+    ports:
+      - "8090:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=ProgressTrackingService;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;Encrypt=False"
+
+      ConnectionStrings__RedisConnectionLocal: "host.docker.internal:6379"
+
+      RabbitMQConnection__HostName: host.docker.internal
+      RabbitMQConnection__Port: 5673
+      RabbitMQConnection__UserName: guest
+      RabbitMQConnection__Password: guest
+
+    restart: on-failure
+
+  # =========================================================
+  # NOTIFICATION SERVICE
+  # =========================================================
+  notificationservice:
+    image: fitnessapp.notificationservice
     build:
       context: .
       dockerfile: NotificationService/Dockerfile
     container_name: notification-service
     ports:
       - "8085:8080"
-    depends_on:
-      - sqlserver
-      - rabbitmq
-    restart: on-failure
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ElevateNotificationDb;User Id=sa;Password=P@ssw0rd12345;TrustServerCertificate=True;Encrypt=False"
-      RabbitMQ__HostName: "rabbitmq"
-      RabbitMQ__Port: "5672"
-      RabbitMQ__UserName: "guest"
-      RabbitMQ__Password: "guest"
-      RabbitMQ__ExchangeName: "progress.events"
-      RabbitMQ__QueueName: "notification.achievement-earned"
-      RabbitMQ__RoutingKey: "achievement_earned"
+      ASPNETCORE_URLS: http://+:8080
 
- fceservice:
+      ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=NotificationService;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;Encrypt=False"
+
+      RabbitMQ__HostName: host.docker.internal
+      RabbitMQ__Port: 5673
+      RabbitMQ__UserName: guest
+      RabbitMQ__Password: guest
+      RabbitMQ__ExchangeName: progress.events
+      RabbitMQ__QueueName: notification.achievement-earned
+      RabbitMQ__RoutingKey: achievement_earned
+
+    restart: on-failure
+
+  # =========================================================
+  # FCE SERVICE
+  # =========================================================
+  fceservice:
+    image: fitnessapp.fceservice
     build:
       context: .
       dockerfile: FCEService/Dockerfile
     container_name: fce-service
     ports:
       - "8086:8080"
-    depends_on:
-      - sqlserver
-    restart: on-failure
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ElevateFCEDb;User Id=sa;Password=P@ssw0rd12345;TrustServerCertificate=True;Encrypt=False"
- authenticationservice:
-    build:
-      context: .
-      dockerfile: FitnessApp.AuthenticationService/Dockerfile
-    container_name: authentication-service
-    ports:
-      - "8087:8080"
-    depends_on:
-      - sqlserver
-    restart: on-failure
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__AuthenticationConnection: "Server=sqlserver,1433;Database=Fitness.Authentication;User Id=sa;Password=P@ssw0rd12345;TrustServerCertificate=True;Encrypt=False"
+      ASPNETCORE_URLS: http://+:8080
 
- userprofileservice:
-    build:
-      context: .
-      dockerfile: FitnessApp.UserProfileService/Dockerfile
-    container_name: userprofile-service
-    ports:
-      - "8088:8080"
-    depends_on:
-      - sqlserver
-    restart: on-failure
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__UserProfileConnection: "Server=sqlserver,1433;Database=Fitness.UserProfile;User Id=sa;Password=P@ssw0rd12345;TrustServerCertificate=True;Encrypt=False"
+      ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=FCEService;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;Encrypt=False"
 
- fitnessapp:
+    restart: on-failure
+
+  # =========================================================
+  # API GATEWAY
+  # =========================================================
+  api_gateway:
+    image: api_gateway
+
     build:
       context: .
-      dockerfile: FitnessApp/Dockerfile
-    container_name: fitness-app
+      dockerfile: API_Gateway/Dockerfile
+
+    container_name: api-gateway
+
     ports:
-      - "8089:8080"
+      - "9090:8080"
+
     depends_on:
-      - sqlserver
+      - authenticationservice
+      - userprofileservice
+      - workoutservice
+      - progresstrackingservice
+      - notificationservice
+      - fceservice
+
     restart: on-failure
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ElevateWorkoutDb;User Id=sa;Password=P@ssw0rd12345;TrustServerCertificate=True;Encrypt=False"
-volumes:
-  sqlserver_data:

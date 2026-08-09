@@ -12,15 +12,15 @@ using ProgressTrackingService.Infrastructure.Persistence.Context;
 namespace ProgressTrackingService.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260705192117_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260815214902_LastVersion")]
+    partial class LastVersion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -253,13 +253,12 @@ namespace ProgressTrackingService.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SessionId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("WorkoutId")
+                    b.Property<int?>("WorkoutId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -311,6 +310,32 @@ namespace ProgressTrackingService.Migrations
                     b.HasIndex("WorkoutLogId");
 
                     b.ToTable("WorkoutLogExercises", "ProgressTracking");
+                });
+
+            modelBuilder.Entity("ProgressTrackingService.Domain.Entities.WorkoutSessionTracking", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkoutId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WorkoutSessionTrackings", "ProgressTracking");
                 });
 
             modelBuilder.Entity("ProgressTrackingService.Domain.Entities.UserAchievement", b =>

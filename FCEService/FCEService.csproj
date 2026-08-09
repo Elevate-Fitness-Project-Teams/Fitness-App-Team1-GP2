@@ -13,10 +13,17 @@
     <Compile Remove="Infrastructure\NewFolder\**" />
     <Content Remove="Features\WeightGoalActivity\ViewModel\**" />
     <Content Remove="Infrastructure\NewFolder\**" />
+    <Content Include="..\.dockerignore">
+      <Link>.dockerignore</Link>
+      <DependentUpon>Dockerfile</DependentUpon>
+    </Content>
     <EmbeddedResource Remove="Features\WeightGoalActivity\ViewModel\**" />
     <EmbeddedResource Remove="Infrastructure\NewFolder\**" />
     <None Remove="Features\WeightGoalActivity\ViewModel\**" />
     <None Remove="Infrastructure\NewFolder\**" />
+    <Content Update="appsettings.Development.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
