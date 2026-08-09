@@ -42,7 +42,7 @@ public class ViewWeightEndPoint(IMediator mediator) : ControllerBase
 
         var viewModel = new ViewWeightViewModel
         {
-            WeightHistory = result.Data.Data
+            WeightHistory = result.Data.Data!
         };
         
         var paginated = new PaginatedResult<ViewWeightViewModel>([viewModel], result.Data.TotalCount, result.Data.CurrentPage, result.Data.PageSize);

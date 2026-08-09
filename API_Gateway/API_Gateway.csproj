@@ -8,9 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
         <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
     </ItemGroup>
+
+<!--    <ItemGroup>-->
+<!--&lt;!&ndash;        <ProjectReference Include="..\FitnessApp.Shared\FitnessApp.Shared.csproj" />&ndash;&gt;-->
+<!--    </ItemGroup>-->
 
     <ItemGroup>
       <Content Include="..\.dockerignore">
