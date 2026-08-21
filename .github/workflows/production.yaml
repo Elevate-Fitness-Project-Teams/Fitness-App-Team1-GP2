@@ -176,7 +176,7 @@ jobs:
     needs:
       - generate-tag
       - build-and-push
-#      - deploy
+      #- deploy
 
     runs-on: ubuntu-latest
 
