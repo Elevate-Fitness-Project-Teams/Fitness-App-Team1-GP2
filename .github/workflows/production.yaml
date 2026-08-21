@@ -1,17 +1,9 @@
-<<<<<<< HEAD
 name: Production Build & Deploy
-=======
-﻿name: Production Build & Deploy
->>>>>>> cb181a4f89cef243c11dc69b0bb38426fc8667a2
 
 on:
   push:
     branches:
-<<<<<<< HEAD
       - main
-=======
-      - master
->>>>>>> cb181a4f89cef243c11dc69b0bb38426fc8667a2
 
 concurrency:
   group: docker-build-production
@@ -124,7 +116,6 @@ jobs:
   # =========================================================
   # DEPLOYMENT
   # =========================================================
-<<<<<<< HEAD
   #  deploy:
   #    name: Deploy to Production
   #
@@ -175,58 +166,6 @@ jobs:
   #            echo "======================================"
   #
   #
-=======
-#  deploy:
-#    name: Deploy to Production
-#
-#    needs:
-#      - generate-tag
-#      - build-and-push
-#
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#
-#      - name: Deploy to Production Server
-#        uses: appleboy/ssh-action@v1.2.2
-#        with:
-#          host: ${{ secrets.PROD_HOST }}
-#          username: ${{ secrets.PROD_USER }}
-#          key: ${{ secrets.PROD_SSH_KEY }}
-#
-#          script: |
-#
-#            cd /opt/fitness-app
-#
-#            echo "======================================"
-#            echo "Starting Production Deployment"
-#            echo "======================================"
-#
-#            echo "Logging into Docker Hub..."
-#
-#            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | \
-#            docker login \
-#              -u "${{ secrets.DOCKERHUB_USERNAME }}" \
-#              --password-stdin
-#
-#            echo "Pulling latest images..."
-#
-#            docker compose -f docker-compose-production.yml pull
-#
-#            echo "Starting containers..."
-#
-#            docker compose -f docker-compose-production.yml up -d
-#
-#            echo "Removing unused images..."
-#
-#            docker image prune -f
-#
-#            echo "======================================"
-#            echo "Deployment Completed"
-#            echo "======================================"
-#
-#
->>>>>>> cb181a4f89cef243c11dc69b0bb38426fc8667a2
 
   # =========================================================
   # DEPLOYMENT SUMMARY
@@ -237,11 +176,7 @@ jobs:
     needs:
       - generate-tag
       - build-and-push
-<<<<<<< HEAD
       #- deploy
-=======
-      - deploy
->>>>>>> cb181a4f89cef243c11dc69b0bb38426fc8667a2
 
     runs-on: ubuntu-latest
 
