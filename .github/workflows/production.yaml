@@ -77,15 +77,6 @@ jobs:
         uses: actions/checkout@v4
 
       # -----------------------------------------------------
-      # Docker Buildx
-      # -----------------------------------------------------
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          install: true
-          driver-opts: network=host
-
-      # -----------------------------------------------------
       # Docker Hub Login
       # -----------------------------------------------------
       - name: Login to Docker Hub
@@ -94,6 +85,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      # -----------------------------------------------------
+      # Docker Build Cloud Setup
+      # -----------------------------------------------------
+      - name: Set up Docker Buildx (Cloud Builder)
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: cloud
+          endpoint: "mohamedelganzory/api-fitness-app"
 
       # -----------------------------------------------------
       # Build & Push
@@ -110,63 +109,6 @@ jobs:
             ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-${{ matrix.service }}-${{ needs.generate-tag.outputs.tag }}
             ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-${{ matrix.service }}-latest
 
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
-
-  # =========================================================
-  # DEPLOYMENT
-  # =========================================================
-  #  deploy:
-  #    name: Deploy to Production
-  #
-  #    needs:
-  #      - generate-tag
-  #      - build-and-push
-  #
-  #    runs-on: ubuntu-latest
-  #
-  #    steps:
-  #
-  #      - name: Deploy to Production Server
-  #        uses: appleboy/ssh-action@v1.2.2
-  #        with:
-  #          host: ${{ secrets.PROD_HOST }}
-  #          username: ${{ secrets.PROD_USER }}
-  #          key: ${{ secrets.PROD_SSH_KEY }}
-  #
-  #          script: |
-  #
-  #            cd /opt/fitness-app
-  #
-  #            echo "======================================"
-  #            echo "Starting Production Deployment"
-  #            echo "======================================"
-  #
-  #            echo "Logging into Docker Hub..."
-  #
-  #            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | \
-  #            docker login \
-  #              -u "${{ secrets.DOCKERHUB_USERNAME }}" \
-  #              --password-stdin
-  #
-  #            echo "Pulling latest images..."
-  #
-  #            docker compose -f docker-compose-production.yml pull
-  #
-  #            echo "Starting containers..."
-  #
-  #            docker compose -f docker-compose-production.yml up -d
-  #
-  #            echo "Removing unused images..."
-  #
-  #            docker image prune -f
-  #
-  #            echo "======================================"
-  #            echo "Deployment Completed"
-  #            echo "======================================"
-  #
-  #
-
   # =========================================================
   # DEPLOYMENT SUMMARY
   # =========================================================
@@ -176,7 +118,6 @@ jobs:
     needs:
       - generate-tag
       - build-and-push
-      #- deploy
 
     runs-on: ubuntu-latest
 
@@ -203,5 +144,3 @@ jobs:
           echo "| Tag | ${{ needs.generate-tag.outputs.tag }} |" >> "$GITHUB_STEP_SUMMARY"
 
           echo "| Docker Image | ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }} |" >> "$GITHUB_STEP_SUMMARY"
-
-          echo "| Deployment | ${{ needs.deploy.result }} |" >> "$GITHUB_STEP_SUMMARY"
